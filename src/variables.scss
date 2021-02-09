@@ -1,0 +1,8 @@
+@use "sass:map";
+
+/* You can add global styles to this file, and also import other style files */
+@import "~bootstrap/scss/functions";
+@import "~bootstrap/scss/variables";
+
+$grid-breakpoints: map.set($grid-breakpoints, 'xxl', 1440px);
+$container-max-widths: map.set($container-max-widths, 'xxl', 1400px);

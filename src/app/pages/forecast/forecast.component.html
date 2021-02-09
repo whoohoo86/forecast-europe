@@ -1,0 +1,33 @@
+<div class="container-fluid h-100" *ngIf="!isLoadingForecast && !isLoadingTruth">
+  <div class="row">
+    <div class="col">
+      <app-settings-selection [location]="dataFilter.location"
+        (onLocationChanged)="changeDataFilter({location: $event})" [forecastTarget]="dataFilter.target"
+        (onForecastTargetChanged)="changeDataFilter({target: $event})"
+        [confidenceInterval]="displaySettings.confidenceInterval"
+        (onConfidenceIntervalChanged)="changeDisplaySettings({confidenceInterval: $event})"
+        [displayMode]="displaySettings.displayMode"
+        (onDisplayModeChanged)="changeDisplaySettings({displayMode: $event})"
+        [availableForecastDates]="availableForecastDates">
+      </app-settings-selection>
+    </div>
+  </div>
+
+  <div class="row viz-row">
+    <div class="d-none d-xl-block col-xl-auto h-100">
+      <app-location-map [location]="dataFilter.location" (onLocationChanged)="changeDataFilter({location: $event})"
+        [locationValues]="locationValueMap$ | async" [mapTitle]="'Last observed ' + dataFilter.target | titlecase">
+      </app-location-map>
+    </div>
+
+    <div class="col-12 col-xl h-100">
+      <app-forecast-chart-with-legend [forecastData]="forecastData" [truthData]="truthData"
+        [displaySettings]="displaySettings" [dataFilter]="dataFilter" (onForecastDateChanged)="changeForecastDate($event)">
+      </app-forecast-chart-with-legend>
+    </div>
+  </div>
+</div>
+
+<div class="loading-spinner-container" *ngIf="isLoadingForecast || isLoadingTruth">
+  <app-loading-spinner></app-loading-spinner>
+</div>

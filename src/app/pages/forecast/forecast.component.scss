@@ -1,0 +1,61 @@
+@import "/src/variables.scss";
+@import "node_modules/bootstrap/scss/mixins/_breakpoints";
+
+.max-height {
+  height: calc(100% - 1px) !important;
+}
+
+.viz-row {
+    min-height: 400px;;
+}
+
+
+
+@include media-breakpoint-up(lg) {
+  // app-location-map {
+  //   max-height: calc(100% - 188px);
+  // }
+
+  .viz-row {
+    height: calc(100% - 188px);
+    max-height: 800px;
+    // max-height: calc(100vh - 188px);
+  }
+}
+
+
+
+// .settings-chart-container {
+//   display: flex;
+//   flex-direction: column;
+//   height: 100%;
+
+//   > app-settings-selection {
+//     flex: 0 0 auto;
+//   }
+
+//   > app-forecast-chart-with-legend {
+//     flex: 1 1 100%;
+//   }
+// }
+
+// app-settings-selection {
+//   flex: 1 1 auto;
+// }
+
+// .full-height-row {
+//   flex: 0 1 100%;
+// }
+
+// .row-container {
+//   display: flex;
+//   flex-direction: column;
+// }
+
+// .autosize-row {
+//   flex: 0 0 auto;
+// }
+
+// .fill-row {
+//   flex: 1 1 100%;
+// }
