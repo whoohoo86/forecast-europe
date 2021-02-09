@@ -88,7 +88,7 @@ export class LocationMapComponent implements OnInit, OnChanges {
               setTimeout(() => layer.bringToFront());
             }
 
-            layer.bindTooltip(x => `${locationLookup?.name || ''}: ${NumberHelper.formatInt(featureValue)} (Incidence: ${NumberHelper.formatDecimal(featureIncidence)})`);
+            layer.bindTooltip(x => `<b>${locationLookup?.name || ''}</b><br/>${NumberHelper.formatDecimal(featureIncidence)} <i>/ 100,000 inhabitants</i> <br/>${NumberHelper.formatInt(featureValue)} <i>total</i>`);
           }
         });
         ;

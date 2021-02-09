@@ -3,13 +3,12 @@ import { BehaviorSubject, combineLatest, Observable, Subscription } from 'rxjs';
 import { delay, first, map, shareReplay } from 'rxjs/operators';
 import { ForecastData, ForecastDataFilter, ForecastDisplayMode, ForecastDisplaySettings, ForecastModelData, QuantileType } from 'src/app/models/forecast-data';
 import { ForecastTarget } from 'src/app/models/forecast-target';
-import { LocationLookupItem } from 'src/app/models/location-lookup';
-import { ForecastDataService } from 'src/app/services/forecast-data.service';
 import { LocationLookupService } from 'src/app/services/location-lookup.service';
 import * as _ from 'lodash-es';
 import { TruthDataService } from 'src/app/services/truth-data.service';
 import { TruthData } from 'src/app/models/truth-data';
 import { differenceInDays, isEqual } from 'date-fns';
+import { ForecastDataSerivce } from 'src/app/services/forecast-data.service';
 
 @Component({
   selector: 'app-forecast',
@@ -33,14 +32,10 @@ export class ForecastComponent implements OnInit, OnDestroy {
   private filteredForecastDataSub: Subscription;
   private filteredTruthDataSub: Subscription;
 
-  constructor(private forecastService: ForecastDataService, private locationService: LocationLookupService, private truthDataService: TruthDataService) {
+  constructor(private forecastService: ForecastDataSerivce, private locationService: LocationLookupService, private truthDataService: TruthDataService) {
     this.defaultLocationSub = this.locationService.locations$.pipe(first()).subscribe(x => this.changeDataFilter({ location: x.items[0] }));
 
-    this.filteredForecastDataSub = combineLatest([this.forecastService.forecastData$, this.dataFilter$])
-      .pipe(map(([data, filter]) => {
-        if (!filter.location) return;
-        return data[filter.location.id][filter.target];
-      }))
+    this.filteredForecastDataSub = this.forecastService.createForecastDataObservable(this.dataFilter$)
       .subscribe(data => {
         if (!data) {
           this.availableForecastDates = [];

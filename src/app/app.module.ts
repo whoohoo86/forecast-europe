@@ -18,6 +18,9 @@ import { LeafletExtentionDirective } from './directives/leaflet-extention.direct
 import { EchartsZrClickDirective } from './directives/echarts-zr-click.directive';
 import { HoverClassDirective } from './directives/hover-class.directive';
 import { LoadingSpinnerComponent } from './components/loading-spinner/loading-spinner.component';
+import { ForecastDataSerivce } from './services/forecast-data.service';
+import { ForecastCsvDataService } from './services/forecast-csv-data.service';
+import { ForecastJsonDataService } from './services/forecast-json-data.service';
 
 @NgModule({
   declarations: [
@@ -49,7 +52,9 @@ import { LoadingSpinnerComponent } from './components/loading-spinner/loading-sp
       echarts: () => import('echarts'), // or import('./path-to-my-custom-echarts')
     }),
   ],
-  providers: [],
+  providers: [
+    { provide: ForecastDataSerivce, useClass: ForecastJsonDataService },
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

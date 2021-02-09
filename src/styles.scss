@@ -5,3 +5,9 @@
 
 @import "app/directives/leaflet-extention.directive";
 
+.dropdown {
+  .dropdown-menu {
+    max-height: 400px;
+    overflow: auto;
+  }
+}

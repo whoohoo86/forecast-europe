@@ -84,7 +84,7 @@ export class ForecastChartComponent implements OnInit, OnChanges {
   }
 
   onAxisPointerClick(event: [Date, any]) {
-    console.log("AXISPOINTER CLICK :: ", event);
+    // console.log("AXISPOINTER CLICK :: ", event);
     this.onForecastDateChanged.emit(event[0]);
   }
 
@@ -235,7 +235,7 @@ export class ForecastChartComponent implements OnInit, OnChanges {
 
   private createForecastHorizonTooltipFormatter(): any {
     return (params: any | Array<any>) => {
-      console.log(params);
+      // console.log(params);
       const paramsArray = Array.isArray(params) ? params : [params];
       if (paramsArray.every(x => x.seriesId.endsWith('-ci'))) return '';
 
@@ -408,7 +408,11 @@ export class ForecastChartComponent implements OnInit, OnChanges {
         return prev;
       }, { header: undefined as undefined | string, truth: undefined as undefined | string, models: new Map<string, { value: number; lower: number; upper: number; marker: string; }>() })
 
-      const modelLines = [...content.models.entries()].map(([key, x]) => `${x.marker}&nbsp;${key}:${NumberHelper.formatInt(x.value)}&nbsp;(${NumberHelper.formatInt(x.lower)}&nbsp;-&nbsp;${NumberHelper.formatInt(x.lower + x.upper)})`);
+      const modelLines = [...content.models.entries()].map(([key, x]) => {
+        const upper = x.lower + x.upper;
+        const ci = x.lower !== upper ? `&nbsp;(${NumberHelper.formatInt(x.lower)}&nbsp;-&nbsp;${NumberHelper.formatInt(upper)})` : '';
+        return `${x.marker}&nbsp;${key}:${NumberHelper.formatInt(x.value)}${ci}`
+      });
 
       return [content.header, content.truth].filter(x => !!x).concat(modelLines).join('<br/>');
     }

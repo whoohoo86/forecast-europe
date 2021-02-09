@@ -4,7 +4,11 @@ This project was generated with [Angular CLI](https://github.com/angular/angular
 
 ## Offene Fragen
 
+- hat das ecdc einen TileService (hintergrundbilder für karte)?
+- Erklärungstexte anpassen für Target
+
 - Könnt ihr mir ein Shape, Geojson, etc. für die Länder bereitstellen? Seb guckt
+
 - ~~Karte wieder nach Inzidenz (pro 100.000 Einwohner) einfärben, Tooltip mit Inzidenz und absolutem Wert? Beides~~
 - ~~Gibt es Stylevorgaben? Farben, Logo, Corporate Design? ja farben: <https://github.com/EU-ECDC/EcdcColors>. kein drum herum wie header, logo, etc... weil via iframe eingebunden wird~~
 - ~~Wie werden DefaultModels (Sichtbare Modelle zum Start) und EnsembleModels ermittelt? Neue Datei (json) im git repo mit `{

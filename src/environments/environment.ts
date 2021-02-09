@@ -12,7 +12,10 @@ export const environment = {
     lookups: {
       location: 'https://raw.githubusercontent.com/jbracher/covid19-forecast-hub-europe/main/viz/location_codes.csv'
     },
-    forecastData: 'https://raw.githubusercontent.com/jbracher/covid19-forecast-hub-europe/main/viz/forecasts_to_plot.csv',
+    forecastData: {
+      csv: 'https://raw.githubusercontent.com/jbracher/covid19-forecast-hub-europe/main/viz/forecasts_to_plot.csv',
+      json: 'https://raw.githubusercontent.com/epiforecasts/covid19-forecast-hub-europe/main/viz/forecasts_to_plot.json'
+    },
     truthData: 'https://raw.githubusercontent.com/jbracher/covid19-forecast-hub-europe/main/viz/truth_to_plot.csv'
   }
 };
