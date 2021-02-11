@@ -6,6 +6,7 @@ This project was generated with [Angular CLI](https://github.com/angular/angular
 
 - hat das ecdc einen TileService (hintergrundbilder für karte)?
 - Erklärungstexte anpassen für Target
+- Wenn ich location via ip bestimmen soll, muss ich externen service die ip schicken. ist das ok?
 
 - Könnt ihr mir ein Shape, Geojson, etc. für die Länder bereitstellen? Seb guckt
 
