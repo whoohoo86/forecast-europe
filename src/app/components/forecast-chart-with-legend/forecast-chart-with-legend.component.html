@@ -1,9 +1,9 @@
 <div class="row h-100">
 
   <div class="col-12 col-lg-8 h-100">
-    <app-forecast-chart #chart [forecastModelData]="models" [displaySettings]="displaySettings" [truthData]="truthData"
+    <!-- <app-forecast-chart #chart [forecastModelData]="models" [displaySettings]="displaySettings" [truthData]="truthData"
       [visibleModels]="visibleModels" [dataFilter]="dataFilter" (onForecastDateChanged)="changeForecastDate($event)">
-    </app-forecast-chart>
+    </app-forecast-chart> -->
   </div>
 
   <!-- <div class="col-12 col-lg-4 h-100">
@@ -76,7 +76,7 @@
       <div class="fill-row  h-100">
         <ul class="list-group list-group-flush">
           <!-- <ng-container *ngFor="let item of [1, 2, 3, 4, 5, 6, 7, 8, 9]"> -->
-          <li *ngFor="let modelSeries of models; trackBy: modelIdentity"
+          <!-- <li *ngFor="let modelSeries of models; trackBy: modelIdentity"
             [ngStyle]="{'opacity': (modelSeries.data && modelSeries.data.length > 0) ? 1 : .5}"
             hoverClass="list-group-item-secondary"
             (click)="toggleVisibility(modelSeries.model)" (mouseover)="chart.highlight(modelSeries.model)"
@@ -84,7 +84,7 @@
             <span class="dot" [ngClass]="{'font-weight-bold': isVisible(modelSeries.model)}"
               [ngStyle]="{'border-color': modelSeries.color, 'background-color': isVisible(modelSeries.model) ? modelSeries.color : 'white'}"></span>
             <span class="model-name">{{modelSeries.model}}</span>
-          </li>
+          </li> -->
           <!-- </ng-container> -->
         </ul>
       </div>

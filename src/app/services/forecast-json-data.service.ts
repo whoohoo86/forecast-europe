@@ -7,6 +7,7 @@ import { map, shareReplay } from 'rxjs/operators';
 import * as _ from 'lodash-es';
 import { ForecastTarget } from '../models/forecast-target';
 import { ForecastDataSerivce } from './forecast-data.service';
+import { LocationLookupItem } from '../models/location-lookup';
 
 interface RawForecastToPlotDataItem {
   forecast_date: string,
@@ -44,20 +45,29 @@ export class ForecastJsonDataService extends ForecastDataSerivce {
       .pipe(shareReplay(1));
   }
 
-  createForecastDataObservable(filter$: Observable<ForecastDataFilter>): Observable<{ availableForecastDates: Date[], data: ForecastData[] }> {
-    if (!filter$) {
-      return of({ availableForecastDates: [], data: [] });
-    }
+  createForecastDataObservable(filter: ForecastDataFilter): Observable<{ availableForecastDates: Date[], data: ForecastData[], filter: { target: ForecastTarget, location: LocationLookupItem } }> {
+    return combineLatest([this.rawForecastData$, filter.filter$])
+      .pipe(map(([rawData, f]) => {
+        const locationEntry = rawData[f.location.id];
 
-    return combineLatest([this.rawForecastData$, filter$]).pipe(map(([rawData, filter]) => {
-      if (!filter || !filter.location) return { availableForecastDates: [], data: [] };
-      // filter.target = ForecastTarget.Death;
-      const entry = rawData[filter.location!.id][filter.target];
-      return {
-        availableForecastDates: _.orderBy(entry.availableDates.map(x => new Date(x)), x => x, 'desc'),
-        data: entry.data.map(x => this.createForecastData(x))
-      };
-    }));
+        const emptyResult = { filter: f, availableForecastDates: [], data: [] };
+        if (!locationEntry) {
+          return emptyResult;
+        }
+
+        const entry = locationEntry[f.target];
+        if (!entry) {
+          return emptyResult;
+        }
+
+        // console.log("found entry for", f, entry);
+
+        return {
+          filter: f,
+          availableForecastDates: _.orderBy(entry.availableDates.map(x => new Date(x)), x => x, 'desc'),
+          data: entry.data.map(x => this.createForecastData(x))
+        };
+      }));
   }
 
   private createForecastData(item: RawForecastToPlotDataItem): ForecastData {

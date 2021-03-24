@@ -4,10 +4,11 @@ This project was generated with [Angular CLI](https://github.com/angular/angular
 
 ## Offene Fragen
 
-- hat das ecdc einen TileService (hintergrundbilder für karte)?
-- Erklärungstexte anpassen für Target
+- ~~hat das ecdc einen TileService (hintergrundbilder für karte)?~~
+- ~~Wie sollen Modellfarben bestimmt werden?~~
+- ~~Location by ip -> externer call. ist das ok oder lieber nicht?~~
 
-- Könnt ihr mir ein Shape, Geojson, etc. für die Länder bereitstellen? Seb guckt
+- ~~Könnt ihr mir ein Shape, Geojson, etc. für die Länder bereitstellen? Seb guckt~~
 
 - ~~Karte wieder nach Inzidenz (pro 100.000 Einwohner) einfärben, Tooltip mit Inzidenz und absolutem Wert? Beides~~
 - ~~Gibt es Stylevorgaben? Farben, Logo, Corporate Design? ja farben: <https://github.com/EU-ECDC/EcdcColors>. kein drum herum wie header, logo, etc... weil via iframe eingebunden wird~~
@@ -18,6 +19,44 @@ This project was generated with [Angular CLI](https://github.com/angular/angular
 - ~~Was macht das Scenario genau? Ein DropDown mit nur einem Item ohne dahinterliegender Logik fühlt sich komisch an zu implementieren und verwirrt in der Bedienung. erstmal weglassen und wenn konkret überlegen wie und wo. -> erstmal nicht einbauen~~
 
 ## TODOs
+
+- ~~Map~~
+  - ~~Hover nicht total sonder letzte Woche (cases/deaths last week)~~
+  - ~~Bug in Firefox map hover popup~~
+- ~~Legend~~
+  - ~~Hover highlight punkte größer machen => anderes highlighting gewählt~~
+  - ~~Sortierung in Tabelle nicht casesensitiv (Großbuchstaben zuerst)~~
+- ~~Chart~~
+  - ~~y-axis mit scale=true, datazoom filter~~
+- Demoseite mit eingebettetem IFrame (height 100%)
+- Small Display Layout
+
+### Done
+
+- ~~Deployment in signale repo~~
+- ~~TargetLabelPipe~~
+- ~~DropDown für Location über Karte um kleine Länder wie Lichtenstein zu selektieren~~
+- ~~Farben der Modelle über gesamte Programmdauer konsistent halten -> ColorPicker~~
+- ~~Farbscala in 50er schritten 0 - 350 und blau~~
+- ~~Legende Horizontal und unten positionieren~~
+- ~~header in legend mit target + 100.000 einwohner~~
+- ~~Standard Location = random~~
+- ~~Shapes von Johannes nutzen~~
+- ~~Countries, die nicht im Lookup sind unklickbar machen~~
+- ~~different threshold for colorscale if target === death~~
+- ~~Default choice for prediction interval to 95%~~
+- ~~Tooltip items in chart ordered by value desc~~
+- ~~If defaultModelNames === undefined => use all Modelnames as default~~
+- ~~xAxis.max auf maxDate(truthDate) + 5 wochen~~
+- ~~ThemeColor primary auf '#003a80' ändern~~
+- ~~Text anpassen (googledoc checken)~~
+- ~~Überschrift Forecasts TARGET, LOCATION: `"<target>, <country>, forecasts issued on <entsprechender Montag>" bzw. "... <horizon> week ahead forecasts`~~
+- Darstellung für kleine Displays
+  - ~~breite observen und linkes menü einklappen~~
+  - ~~höhe observen und display settings einklappen~~
+  - eigenes layout für sehr schmale displays
+- BUG: leaflet popup in firefox
+- App in Edge und Firefox ausprobieren
 
 - ~~Next Prev ForecastDate~~
 - ~~Play/Pause Stop ForecastDate~~
@@ -34,8 +73,8 @@ This project was generated with [Angular CLI](https://github.com/angular/angular
 - ~~Layouting und Styling~~
   - ~~Responsiveness / Resize handling~~
   - ~~Loading spinner~~
-- Service um appFormat zu lesen
-- GitHub CI on forecast_to_plot_csv commit -> call convertToAppFormat.py -> forecast_to_plot.json commit + push
+- ~~Service um appFormat zu lesen~~
+- ~~GitHub CI on forecast_to_plot_csv commit -> call convertToAppFormat.py -> forecast_to_plot.json commit + push~~
 
 ## Development server
 

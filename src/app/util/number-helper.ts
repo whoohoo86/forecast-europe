@@ -16,4 +16,9 @@ export class NumberHelper {
     value = NumberHelper.round(value, 0);
     return this.numberPipe.transform(value) || '';
   }
+
+  static format(value: number) {
+    if (Number.isInteger(value)) { return this.formatInt(value); }
+    return this.formatDecimal(value);
+  }
 }

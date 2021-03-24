@@ -1,9 +1,12 @@
-@import "variables.scss";
-
-@import "~bootstrap/scss/bootstrap";
 @import "~leaflet/dist/leaflet";
-
 @import "app/directives/leaflet-extention.directive";
+
+html, body { height: 100%; }
+body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+
+.horizontal-flex-spacer {
+  flex: 1 1 auto;
+}
 
 .dropdown {
   .dropdown-menu {

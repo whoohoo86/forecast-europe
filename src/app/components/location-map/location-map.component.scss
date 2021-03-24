@@ -3,18 +3,11 @@
 #map {
   height: 100%;
   width: 100%;
-  min-height: 200px;
-  min-width: 400px;
+  // min-height: 200px;
+  // min-width: 400px;
+  // border: 1px solid black;
 }
 
-// #a {
-//   color: rgb(101,179,46);
-//   color: rgb(124,189,196);
-//   color: rgb(192,210,54);
-//   color: rgb(62,91,132);
-//   color: rgb(0,140,117);
-//   color: rgb(130,66,141);
-//   color: rgb(232,104,63);
-//   color: rgb(184,26,93);
-// }
-
+.leaflet-container {
+  background-color: unset;
+}

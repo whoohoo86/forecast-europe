@@ -10,7 +10,7 @@ export class LocationLookup {
   items: LocationLookupItem[];
 
   constructor(items: LocationLookupItem[]) {
-    this.items = [...items];
+    this.items = [..._.orderBy(items, x => x.name)];
   }
 
   get(id: string) {

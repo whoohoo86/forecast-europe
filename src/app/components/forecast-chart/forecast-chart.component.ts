@@ -1,13 +1,17 @@
 import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
 import { ECharts, EChartsOption, SeriesOption, TooltipComponentOption } from 'echarts';
-import { ForecastByDateDisplayMode, ForecastByHorizonDisplayMode, ForecastData, ForecastDataFilter, ForecastDisplaySettings, ForecastModelData, ForecastType, QuantilePointType, QuantileType } from 'src/app/models/forecast-data';
+import { ChartDataView, ForecastByDateDisplayMode, ForecastByHorizonDisplayMode, ForecastData, ForecastDataFilter, ForecastDisplayMode, ForecastDisplaySettings, ForecastModelData, ForecastType, QuantilePointType, QuantileType } from 'src/app/models/forecast-data';
 import { TruthData } from 'src/app/models/truth-data';
 import * as _ from 'lodash-es';
-import { addDays } from 'date-fns';
+import { addDays, addMinutes } from 'date-fns';
 import { DateHelper } from 'src/app/util/date-helper';
 import { TitleCasePipe } from '@angular/common';
 import { NumberHelper } from 'src/app/util/number-helper';
 import { stringify } from '@angular/compiler/src/util';
+import { ForecastTarget } from 'src/app/models/forecast-target';
+import { LocationLookupItem } from 'src/app/models/location-lookup';
+import { DateToPrevSaturdayPipe } from 'src/app/pipes/date-to-prev-saturday.pipe';
+import { TargetLabelPipe } from 'src/app/pipes/target-label.pipe';
 
 @Component({
   selector: 'app-forecast-chart',
@@ -16,15 +20,12 @@ import { stringify } from '@angular/compiler/src/util';
 })
 export class ForecastChartComponent implements OnInit, OnChanges {
 
-  @Input() dataFilter?: ForecastDataFilter;
-  @Input() displaySettings?: ForecastDisplaySettings;
-  @Input() forecastModelData: ForecastModelData[] = [];
-  @Input() truthData: TruthData[] = [];
-  @Input() visibleModels?: string[];
+  @Input() visibleModels: string[] | null = null;
+  @Input() dataView: ChartDataView | null = null;
 
   @Output() onForecastDateChanged = new EventEmitter<Date>();
 
-  private titlePipe = new TitleCasePipe();
+  private targetLabelPipe = new TargetLabelPipe();
   private readonly defaultChartOption = {
     grid: {
       top: 20,
@@ -38,7 +39,9 @@ export class ForecastChartComponent implements OnInit, OnChanges {
       type: 'value' as 'value',
       name: '',
       nameLocation: 'middle' as 'middle',
-      nameGap: 50
+      nameGap: 50,
+      min: 0,
+      scale: true,
     },
     tooltip: {
       trigger: 'axis' as 'axis',
@@ -46,16 +49,16 @@ export class ForecastChartComponent implements OnInit, OnChanges {
       formatter: undefined as any
     },
     dataZoom: [
-      { type: 'inside', start: 80, end: 100, filterMode: 'none' as 'none' },
-      { type: 'slider', start: 80, end: 100, filterMode: 'none' as 'none' },
+      { type: 'inside', start: 80, end: 100, filterMode: 'weakFilter' as 'weakFilter' },
+      { type: 'slider', start: 80, end: 100, filterMode: 'weakFilter' as 'weakFilter' },
     ],
-    // animationDurationUpdate: 100,
     animationDuration: 500,
     series: []
   };
 
   chartOption?: EChartsOption;
 
+  private updateChartOptionDebounced = _.debounce(() => { this.updateChartOption() }, 100);
   private dataZoomState?: { start: any, end: any };
   private chart?: ECharts;
 
@@ -67,7 +70,11 @@ export class ForecastChartComponent implements OnInit, OnChanges {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    this.updateChartOption();
+    if (!this.chartOption) {
+      this.updateChartOptionDebounced();
+    } else {
+      this.updateChartOption();
+    }
   }
 
   onChartInit(chart: ECharts) {
@@ -84,14 +91,13 @@ export class ForecastChartComponent implements OnInit, OnChanges {
   }
 
   onAxisPointerClick(event: [Date, any]) {
-    // console.log("AXISPOINTER CLICK :: ", event);
     this.onForecastDateChanged.emit(event[0]);
   }
 
   private highlightedModel?: string;
 
   highlight(model: string) {
-    if (this.chart) {
+    if (this.chart && this.highlightedModel !== model) {
       this.chart.dispatchAction({
         type: 'highlight',
         seriesName: model
@@ -119,46 +125,50 @@ export class ForecastChartComponent implements OnInit, OnChanges {
       newChartOption.dataZoom[0].end = newChartOption.dataZoom[1].end = this.dataZoomState.end;
     }
 
-    if (this.dataFilter) {
-      newChartOption.yAxis.name = this.titlePipe.transform(this.dataFilter.target);
-    }
+    if (this.dataView) {
+      newChartOption.yAxis.name = this.targetLabelPipe.transform(this.dataView.filter.target);
 
-    if (this.truthData) {
-      let data = this.truthData.map(d => ([d.date, d.value]));
+      if (this.dataView.truthData) {
+        const reducedTruth = _.reduce(this.dataView.truthData, (prev, curr) => {
+          prev.maxDate = !prev.maxDate ? curr.date : (curr.date > prev.maxDate ? curr.date : prev.maxDate);
+          prev.data.push([curr.date, curr.value]);
+          return prev;
+        }, { maxDate: undefined as undefined | Date, data: [] as any[] })
 
-      // filters truthdata by forecastDate if displayMode === 'ForecastByDateDisplayMode'
-      // if(this.displaySettings && this.displaySettings.displayMode.$type === 'ForecastByDateDisplayMode'){
-      //   const forecastDate = this.displaySettings.displayMode.forecastDate;
-      //   data = data.filter(d => d[0] <= forecastDate);
-      // }
+        newSeries.push({
+          type: 'line',
+          name: 'truth-data',
+          id: `${this.getDataFilterId()}-truth-data`,
+          data: reducedTruth.data,
+          color: '#333',
+          symbolSize: 6
+        });
 
-      newSeries.push({
-        type: 'line',
-        name: 'truth-data',
-        id: `${this.getDataFilterId()}-truth-data`,
-        data: data,
-        color: '#333',
-      })
-    }
+        if (reducedTruth.maxDate) {
+          (<any>newChartOption.xAxis).max = addDays(reducedTruth.maxDate, 35);
+        }
 
-    if (this.displaySettings) {
+      }
+
       let seriesByDisplayMode: any[] = [];
-      if (this.displaySettings.displayMode.$type === 'ForecastByDateDisplayMode') {
-        seriesByDisplayMode = this.createSeriesByForecastDate(this.displaySettings.confidenceInterval, this.displaySettings.displayMode);
+      if (this.dataView.displaySettings.displayMode.$type === 'ForecastByDateDisplayMode') {
+        seriesByDisplayMode = this.createSeriesByForecastDate(this.dataView.displaySettings.confidenceInterval, this.dataView.displaySettings.displayMode);
         (<any>newChartOption).tooltip.formatter = this.createForecastDateTooltipFormatter();
       }
-      else if (this.displaySettings.displayMode.$type === 'ForecastByHorizonDisplayMode') {
-        seriesByDisplayMode = this.createSeriesByForecastHorizon(this.displaySettings.confidenceInterval, this.displaySettings.displayMode);
+      else if (this.dataView.displaySettings.displayMode.$type === 'ForecastByHorizonDisplayMode') {
+        seriesByDisplayMode = this.createSeriesByForecastHorizon(this.dataView.displaySettings.confidenceInterval, this.dataView.displaySettings.displayMode);
         (<any>newChartOption).tooltip.formatter = this.createForecastHorizonTooltipFormatter();
-        newChartOption.grid = { ...newChartOption.grid, top: 10 };
       }
       seriesByDisplayMode.forEach(x => newSeries.push(x));
+
     }
 
+    console.log("CHARTOPTIONS", newChartOption);
     this.chartOption = newChartOption;
   }
 
-  private createSeriesByForecastHorizon(ci: QuantileType, displayMode: ForecastByHorizonDisplayMode): any[] {
+  // TODO: refactor seriesData erzeugung um neuen serien zu entsprechen + area wieder mit in tooltip
+  private createSeriesByForecastHorizon(ci: QuantileType | undefined, displayMode: ForecastByHorizonDisplayMode): any[] {
     const forecasts = this.getVisibleForecastModels();
     if (!forecasts || forecasts.length === 0) {
       return [];
@@ -193,45 +203,221 @@ export class ForecastChartComponent implements OnInit, OnChanges {
         return prev;
       }, new Map<string, { line: any[], area: Map<string, [any, any]> }>());
 
-      const result = _.flatMap([...seriesData.values()], (x, i) => {
-        const id = `${this.getDataFilterId()}-${modelData.model}-${i}`
-        return [{
-          type: 'line',
-          name: modelData.model,
-          id: id,
-          data: x.line.map(l => {
-            const area = x.area.get(l.value[0].toISOString());
-            return { value: [l.value[0], l.value[1], area?.map(a => a.yAxis) || undefined] };
-          }),
-          color: modelData.color,
-        },
+      const a = _.flatMap([...seriesData.values()], (x, i, array) => {
+        console.log("line", x.line);
+        if (i === 0) {
+          const p1 = [x.line[1].value[0], x.line[1].value[1]];
+          const oldDate = p1[0];
+          p1[0] = addMinutes(p1[0], -1);
+          return [x.line[0], { value: p1 }, { value: [oldDate, null] }, { area: [...x.area.values()] }];
+        }
+        if (i === array.length - 1) {
+          const p0 = [x.line[0].value[0], x.line[0].value[1]];
+          p0[0] = addMinutes(p0[0], 1);
+          return [{ value: p0 }, x.line[1], { area: [...x.area.values()] }];
+        }
+
+        const p0 = [x.line[0].value[0], x.line[0].value[1]];
+        p0[0] = addMinutes(p0[0], 1);
+
+        const p1 = [x.line[1].value[0], x.line[1].value[1]];
+        const oldDate = p1[0];
+        p1[0] = addMinutes(p1[0], -1);
+
+        return [{ value: p0 }, { value: p1 }, { value: [oldDate, null] }, { area: [...x.area.values()] }];
+      });
+
+      console.log("A", a);
+      const id = `${this.getDataFilterId()}-${modelData.model}`
+
+      const result = [
         {
           type: 'line',
           name: modelData.model,
-          id: `${id}-ci`,
-          data: _.flatMap([...x.area.values()], ([d0, d1]) => [{ value: [d0.xAxis, d0.yAxis] }, { value: [d1.xAxis, d1.yAxis] }]),
-          silent: true,
-          symbol: 'none',
+          id: id,
+          data: a.filter(x => x.hasOwnProperty('value')).map(l => {
+            // const area = x.area.get(l.value[0].toISOString());
+            // return { value: [l.value[0], l.value[1], area?.map(a => a.yAxis) || undefined] };
+            return { value: l.value }
+          }),
           color: modelData.color,
-          itemStyle: {
-            opacity: 0
-          },
-          lineStyle: {
-            opacity: 0
+          emphasis: {
+            focus: 'series',
+            // blurScope: 'global'
           },
           markArea: {
             itemStyle: {
               color: modelData.color,
               opacity: 0.4
             },
-            data: [...x.area.values()]
+            data: _.flatMap(a.filter(x => x.hasOwnProperty('area')), x => {
+              return x.area;
+            })
           },
-        }]
-      });
+          symbolSize: 6
+        },
+        {
+          type: 'line',
+          name: modelData.model,
+          id: `${id}-ci`,
+          data: _.flatMap(a.filter(x => x.hasOwnProperty('area')), x => {
+            return _.flatMap(x.area, ([d0, d1]: [any, any]) => [{ value: [d0.xAxis, d0.yAxis] }, { value: [d1.xAxis, d1.yAxis] }]);
+          }),
+          // data: _.flatMap(a.filter(x => x.hasOwnProperty('area')), ([d0, d1]) => [{ value: [d0.xAxis, d0.yAxis] }, { value: [d1.xAxis, d1.yAxis] }]),
+          // silent: true,
+          // symbol: 'none',
+          color: modelData.color,
+          // emphasis: {
+          //   focus: 'self'
+          // },
+          itemStyle: {
+            opacity: 0
+          },
+          lineStyle: {
+            opacity: 0
+          },
+          // markArea: {
+          //   itemStyle: {
+          //     color: modelData.color,
+          //     opacity: 0.4
+          //   },
+          //   data: [...x.area.values()]
+          // },
+        }
+      ];
 
+      // const result = _.flatMap([...seriesData.values()], (x, i) => {
+      //   const id = `${this.getDataFilterId()}-${modelData.model}-${i}`
+      //   return [{
+      //     type: 'line',
+      //     name: modelData.model,
+      //     id: id,
+      //     data: x.line.map(l => {
+      //       const area = x.area.get(l.value[0].toISOString());
+      //       return { value: [l.value[0], l.value[1], area?.map(a => a.yAxis) || undefined] };
+      //     }),
+      //     color: modelData.color,
+      //     emphasis: {
+      //       // focus: 'series',
+      //       // blurScope: 'global'
+      //     },
+      //     symbolSize: 6
+      //   },
+      //   {
+      //     type: 'line',
+      //     name: modelData.model,
+      //     id: `${id}-ci`,
+      //     data: _.flatMap([...x.area.values()], ([d0, d1]) => [{ value: [d0.xAxis, d0.yAxis] }, { value: [d1.xAxis, d1.yAxis] }]),
+      //     silent: true,
+      //     symbol: 'none',
+      //     color: modelData.color,
+      //     // emphasis: {
+      //     //   focus: 'self'
+      //     // },
+      //     itemStyle: {
+      //       opacity: 0
+      //     },
+      //     lineStyle: {
+      //       opacity: 0
+      //     },
+      //     markArea: {
+      //       itemStyle: {
+      //         color: modelData.color,
+      //         opacity: 0.4
+      //       },
+      //       data: [...x.area.values()]
+      //     },
+      //   }]
+      // });
+
+      console.log("series", result);
       return result;
     });
   }
+
+  // private createSeriesByForecastHorizon(ci: QuantileType | undefined, displayMode: ForecastByHorizonDisplayMode): any[] {
+  //   const forecasts = this.getVisibleForecastModels();
+  //   if (!forecasts || forecasts.length === 0) {
+  //     return [];
+  //   }
+
+  //   return _.flatMap(forecasts, modelData => {
+  //     const seriesData = _.reduce(modelData.data, (prev, curr) => {
+  //       const timezeroStr = curr.timezero.toISOString();
+  //       if (curr.type === ForecastType.Point && curr.target.time_ahead === displayMode.weeksAhead || curr.type === ForecastType.Observed) {
+  //         if (!prev.has(timezeroStr)) {
+  //           prev.set(timezeroStr, { line: [], area: new Map() })
+  //         }
+  //         prev.get(timezeroStr)!.line.push({ value: [curr.target.end_date, curr.value] });
+  //       } else if (curr.type === ForecastType.Quantile && curr.target.time_ahead === displayMode.weeksAhead && curr.quantile && curr.quantile.type === ci) {
+  //         if (!prev.has(timezeroStr)) {
+  //           prev.set(timezeroStr, { line: [], area: new Map() })
+  //         }
+
+  //         if (!prev.get(timezeroStr)!.area.has(curr.target.end_date.toISOString())) {
+  //           prev.get(timezeroStr)!.area.set(curr.target.end_date.toISOString(), [{ xAxis: undefined, yAxis: undefined }, { xAxis: undefined, yAxis: undefined }]);
+  //         }
+
+  //         const mapEntry = prev.get(timezeroStr)!.area.get(curr.target.end_date.toISOString())!;
+  //         if (curr.quantile.point === QuantilePointType.Lower) {
+  //           mapEntry[0].xAxis = addDays(curr.target.end_date, -3);
+  //           mapEntry[0].yAxis = curr.value;
+  //         } else if (curr.quantile.point === QuantilePointType.Upper) {
+  //           mapEntry[1].xAxis = addDays(curr.target.end_date, 3);
+  //           mapEntry[1].yAxis = curr.value;
+  //         }
+  //       }
+  //       return prev;
+  //     }, new Map<string, { line: any[], area: Map<string, [any, any]> }>());
+
+  //     const result = _.flatMap([...seriesData.values()], (x, i) => {
+  //       const id = `${this.getDataFilterId()}-${modelData.model}-${i}`
+  //       return [{
+  //         type: 'line',
+  //         name: modelData.model,
+  //         id: id,
+  //         data: x.line.map(l => {
+  //           const area = x.area.get(l.value[0].toISOString());
+  //           return { value: [l.value[0], l.value[1], area?.map(a => a.yAxis) || undefined] };
+  //         }),
+  //         color: modelData.color,
+  //         emphasis: {
+  //           // focus: 'series',
+  //           // blurScope: 'global'
+  //         },
+  //         symbolSize: 6
+  //       },
+  //       {
+  //         type: 'line',
+  //         name: modelData.model,
+  //         id: `${id}-ci`,
+  //         data: _.flatMap([...x.area.values()], ([d0, d1]) => [{ value: [d0.xAxis, d0.yAxis] }, { value: [d1.xAxis, d1.yAxis] }]),
+  //         silent: true,
+  //         symbol: 'none',
+  //         color: modelData.color,
+  //         // emphasis: {
+  //         //   focus: 'self'
+  //         // },
+  //         itemStyle: {
+  //           opacity: 0
+  //         },
+  //         lineStyle: {
+  //           opacity: 0
+  //         },
+  //         markArea: {
+  //           itemStyle: {
+  //             color: modelData.color,
+  //             opacity: 0.4
+  //           },
+  //           data: [...x.area.values()]
+  //         },
+  //       }]
+  //     });
+
+  //     console.log("series", result);
+  //     return result;
+  //   });
+  // }
 
   private createForecastHorizonTooltipFormatter(): any {
     return (params: any | Array<any>) => {
@@ -246,10 +432,9 @@ export class ForecastChartComponent implements OnInit, OnChanges {
 
         switch (curr.seriesName) {
           case 'truth-data':
-            prev.lines.push(`${curr.marker}&nbsp;${this.titlePipe.transform(this.dataFilter?.target)}:&nbsp;${NumberHelper.formatInt(curr.value[1])}`);
+            prev.truthLine = `${curr.marker}&nbsp;${this.targetLabelPipe.transform(this.dataView!.filter.target)}:&nbsp;${NumberHelper.formatInt(curr.value[1])}`;
             break;
           default:
-            // const seriesId: string = curr.seriesId;
             const value = curr.value[1];
             const ci = curr.value[2];
 
@@ -257,22 +442,29 @@ export class ForecastChartComponent implements OnInit, OnChanges {
             if (ci) {
               line += `&nbsp;(${NumberHelper.formatInt(ci[0])}&nbsp;-&nbsp;${NumberHelper.formatInt(ci[1])})`
             }
-            prev.lines.push(line);
+            prev.fc_lines.push({ line, value });
 
             break;
         }
 
         return prev;
-      }, { header: undefined as undefined | string, lines: [] as string[] })
+      }, { header: undefined as undefined | string, truthLine: undefined as undefined | string, fc_lines: [] as { line: string; value: number }[] })
 
-      // const modelLines = [...content.models.entries()].map(([key, x]) => `${x.marker}&nbsp;${key}:${NumberHelper.formatInt(x.value)}&nbsp;(${NumberHelper.formatInt(x.lower)}&nbsp;-&nbsp;${NumberHelper.formatInt(x.lower + x.upper)})`);
+      const lines = [content.header];
+      if (content.truthLine) {
+        lines.push(content.truthLine);
+      }
 
-      return [content.header].concat(content.lines).join('<br/>');
+      return lines.concat(_.orderBy(content.fc_lines, 'value', 'desc').map(x => x.line)).join('<br/>');
     }
   }
 
-  private createSeriesByForecastDate(ci: QuantileType, displayMode: ForecastByDateDisplayMode): any[] {
+  private forecastDateCorrector = new DateToPrevSaturdayPipe();
+
+  private createSeriesByForecastDate(ci: QuantileType | undefined, displayMode: ForecastByDateDisplayMode): any[] {
     const result: any[] = [];
+    const correctedForecastDate = this.forecastDateCorrector.transform(displayMode.forecastDate);
+
     const forecastDateVericalLineSeries: any = {
       type: 'line',
       id: 'forecast-date-line',
@@ -281,11 +473,11 @@ export class ForecastChartComponent implements OnInit, OnChanges {
         silent: true,
         symbol: 'none',
         label: {
-          formatter: DateHelper.format(displayMode.forecastDate)
+          formatter: DateHelper.format(correctedForecastDate)
         },
         itemStyle: { color: '#555' },
         data: [
-          { xAxis: displayMode.forecastDate }
+          { xAxis: correctedForecastDate }
         ]
       },
       markArea: {
@@ -294,7 +486,7 @@ export class ForecastChartComponent implements OnInit, OnChanges {
           color: '#ccc',
           opacity: 0.5
         },
-        data: [[{ xAxis: 'min', }, { xAxis: displayMode.forecastDate, }]]
+        data: [[{ xAxis: 'min', }, { xAxis: correctedForecastDate, }]]
       },
 
     }
@@ -335,7 +527,11 @@ export class ForecastChartComponent implements OnInit, OnChanges {
           color: modelData.color,
           id: `${this.getDataFilterId()}-${modelData.model}`,
           name: modelData.model,
-          data: seriesData.line
+          data: seriesData.line,
+          emphasis: {
+            focus: 'series'
+          },
+          symbolSize: 6
         }
 
         const defaultConfBandOption = {
@@ -382,7 +578,7 @@ export class ForecastChartComponent implements OnInit, OnChanges {
 
         switch (curr.seriesName) {
           case 'truth-data':
-            prev.truth = `${curr.marker}&nbsp;${this.titlePipe.transform(this.dataFilter?.target)}:&nbsp;${NumberHelper.formatInt(curr.value[1])}`;
+            prev.truth = `${curr.marker}&nbsp;${this.targetLabelPipe.transform(this.dataView!.filter.target)}:&nbsp;${NumberHelper.formatInt(curr.value[1])}`;
             break;
           default:
             if (!prev.models.has(curr.seriesName)) {
@@ -408,10 +604,10 @@ export class ForecastChartComponent implements OnInit, OnChanges {
         return prev;
       }, { header: undefined as undefined | string, truth: undefined as undefined | string, models: new Map<string, { value: number; lower: number; upper: number; marker: string; }>() })
 
-      const modelLines = [...content.models.entries()].map(([key, x]) => {
+      const modelLines = _.orderBy([...content.models.entries()], ([key, x]) => x.value, 'desc').map(([key, x]) => {
         const upper = x.lower + x.upper;
         const ci = x.lower !== upper ? `&nbsp;(${NumberHelper.formatInt(x.lower)}&nbsp;-&nbsp;${NumberHelper.formatInt(upper)})` : '';
-        return `${x.marker}&nbsp;${key}:${NumberHelper.formatInt(x.value)}${ci}`
+        return `${x.marker}&nbsp;${key}:&nbsp;${NumberHelper.formatInt(x.value)}${ci}`
       });
 
       return [content.header, content.truth].filter(x => !!x).concat(modelLines).join('<br/>');
@@ -419,15 +615,16 @@ export class ForecastChartComponent implements OnInit, OnChanges {
   }
 
   private getDataFilterId() {
-    return this.dataFilter ? `${this.dataFilter.target}-${this.dataFilter.location?.id || ''}` : '';
+    return this.dataView ? `${this.dataView.filter.target}-${this.dataView.filter.location.id || ''}` : '';
   }
 
   private getVisibleForecastModels(): ForecastModelData[] {
+    const data = this.dataView ? this.dataView.forecasts : [];
     if (this.visibleModels) {
       const visibles = this.visibleModels;
-      return this.forecastModelData.filter(x => visibles.indexOf(x.model) > -1);
+      return data.filter(x => visibles.indexOf(x.model) > -1);
     }
 
-    return this.forecastModelData;
+    return data;
   }
 }

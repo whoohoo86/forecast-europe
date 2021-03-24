@@ -1,0 +1,38 @@
+.dot {
+  height: 0.8rem;
+  width: 0.8rem;
+  border-radius: 50%;
+  display: inline-block;
+  border: solid 3.5px #bbb;
+
+  margin-top: 6px;
+}
+
+.legend-table{
+  width: 100%;
+}
+
+.mat-column-color {
+  width: 40px;
+}
+.mat-column-model {
+  flex: 0 0 100%;
+}
+.mat-column-visibility {
+  width: 40px;
+}
+
+tr.mat-row {
+  cursor: pointer;
+}
+
+tr.mat-row:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.mat-column-visibility {
+  > mat-checkbox {
+    pointer-events: none;
+    margin-left: 4px;
+  }
+}

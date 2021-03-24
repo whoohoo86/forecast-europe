@@ -11,6 +11,7 @@ import { NumberHelper } from '../util/number-helper';
 })
 export class LeafletExtentionDirective implements OnInit, OnChanges, OnDestroy {
 
+  @Input() colorScaleHeader?: string;
   @Input() colorScale?: ThresholdColorScale;
   @Input() mapTitle?: string;
   @Output() tooltipVisibilityChanged: EventEmitter<boolean> = new EventEmitter<boolean>();
@@ -40,8 +41,8 @@ export class LeafletExtentionDirective implements OnInit, OnChanges, OnDestroy {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes.colorScale) {
-      this.updateLegend(this.leaflet.map, this.colorScale);
+    if (changes.colorScale || changes.colorScaleHeader) {
+      this.updateLegend(this.leaflet.map, this.colorScale, this.colorScaleHeader);
     }
     if (changes.mapTitle) {
       this.updateTitle(this.leaflet.map, this.mapTitle);
@@ -77,36 +78,47 @@ export class LeafletExtentionDirective implements OnInit, OnChanges, OnDestroy {
     const thresholds = scale?.getThresholds();
     if (!thresholds || thresholds.length === 0) return [];
 
-    return [1, ...thresholds.map(x => Math.ceil(x))].map((grade, index, array) => {
+    const areAllValuesInt = thresholds.every(x => Number.isInteger(x));
+    //.map(x => Math.ceil(x))
+    return [1, ...thresholds].map((grade, index, array) => {
       let label = '';
       if (index === array.length - 1) {
-        label = NumberHelper.formatInt(array[index]) + '+';
+        label = NumberHelper.format(array[index]) + '+';
       } else if (array[index] === array[index + 1] - 1) {
-        label = NumberHelper.formatInt(array[index]) + '';
+        label = NumberHelper.format(array[index]) + '';
       } else {
-        label = NumberHelper.formatInt(array[index]) + ' - ' + (NumberHelper.formatInt(array[index + 1] - 1));
+        label = NumberHelper.format(array[index]) + ' - ' + NumberHelper.format(array[index + 1] - (areAllValuesInt ? 1 : 0.01));
       }
       return { grade, label };
     });
   }
 
   private legend: Control | null = null;
-  private updateLegend(map: Map, scale?: ThresholdColorScale) {
+  private updateLegend(map: Map, scale?: ThresholdColorScale, header?: string) {
     if (this.legend) {
       this.legend.remove();
       this.legend = null;
     }
 
     if (map && scale) {
-      const legend = new Control({ position: 'bottomright' });
+      const legend = new Control({ position: 'bottomleft' });
       const gradeLabels = this.createIntLegendItems(scale);
       legend.onAdd = (map) => {
         const div = DomUtil.create('div', 'info legend');
-        div.innerHTML = '<span style=" background:' + scale.getColor(0) + '" class="legend-block"></span> ' + 0 + '<br />';
+
+        let innerHtml = '';
+        if (header) {
+          innerHtml += `<div class="legend-header">${header}</div>`;
+        }
+
+        innerHtml += '<div class="legend-item-container">'
+        innerHtml += this.createLegendItem('0', scale.getColor(0));
         gradeLabels.forEach((item) => {
-          div.innerHTML +=
-            '<span style=" background:' + (scale.getColor(item.grade)) + '" class="legend-block"></span> ' + item.label + '<br />';
+          innerHtml += this.createLegendItem(item.label, scale.getColor(item.grade));
         });
+        innerHtml += '</div>'
+
+        div.innerHTML = innerHtml;
         return div;
       };
       legend.addTo(map);
@@ -114,8 +126,16 @@ export class LeafletExtentionDirective implements OnInit, OnChanges, OnDestroy {
     }
   }
 
+  private createLegendItem(label: string, color: string) {
+    return `
+    <div class="legend-item">
+      <div class="legend-block" style="background: ${color}"></div>
+      <div class="legend-label">${label}</div>
+    </div>`;
+  }
+
   private updateAll(map: Map): void {
-    this.updateLegend(map, this.colorScale);
+    this.updateLegend(map, this.colorScale, this.colorScaleHeader);
     this.updateTitle(map, this.mapTitle);
   }
 }

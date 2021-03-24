@@ -1,0 +1,10 @@
+<mat-card class="setting-card">
+  <mat-card-title-group>
+    <mat-icon *ngIf="icon">{{icon}}</mat-icon>
+    <mat-card-title class="title">{{name}}</mat-card-title>
+    <mat-card-subtitle class="subtitle">{{helpText}}</mat-card-subtitle>
+  </mat-card-title-group>
+  <mat-card-content>
+    <ng-content></ng-content>
+  </mat-card-content>
+</mat-card>

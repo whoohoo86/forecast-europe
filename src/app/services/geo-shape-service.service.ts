@@ -9,7 +9,7 @@ import { environment } from './../../environments/environment';
 })
 export class GeoShapeServiceService {
 
-  private readonly euStatesUrl = '/assets/european-union-countries.geojson';
+  private readonly euStatesUrl = '/assets/eu-countries.json';
   euStates$: Observable<GeoJSON.FeatureCollection>;
 
   constructor(private http: HttpClient) {

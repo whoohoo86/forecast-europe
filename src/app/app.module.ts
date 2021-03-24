@@ -21,6 +21,30 @@ import { LoadingSpinnerComponent } from './components/loading-spinner/loading-sp
 import { ForecastDataSerivce } from './services/forecast-data.service';
 import { ForecastCsvDataService } from './services/forecast-csv-data.service';
 import { ForecastJsonDataService } from './services/forecast-json-data.service';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { ScaffoldComponent } from './scaffold/scaffold.component';
+import { LayoutModule } from '@angular/cdk/layout';
+import { MatToolbarModule } from '@angular/material/toolbar';
+import { MatButtonModule } from '@angular/material/button';
+import { MatSidenavModule } from '@angular/material/sidenav';
+import { MatIconModule } from '@angular/material/icon';
+import { MatListModule } from '@angular/material/list';
+import { MatCardModule } from '@angular/material/card';
+import { MatGridListModule } from '@angular/material/grid-list';
+import { MatMenuModule } from '@angular/material/menu';
+import { MatButtonToggleModule } from '@angular/material/button-toggle';
+import { MatSelectModule } from '@angular/material/select';
+import { CdkScrollableModule } from '@angular/cdk/scrolling'
+import { MatTabsModule } from '@angular/material/tabs';
+import { MatTableModule } from '@angular/material/table';
+import { MatSortModule } from '@angular/material/sort';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatExpansionModule } from '@angular/material/expansion';
+import { ForecastSettingComponent } from './components/forecast-setting/forecast-setting.component';
+import { LegendComponent } from './components/legend/legend.component';
+import { DateToPrevSaturdayPipe } from './pipes/date-to-prev-saturday.pipe';
+import { CdkScrollableExtDirective } from './directives/cdk-scrollable-ext.directive';
+import { TargetLabelPipe } from './pipes/target-label.pipe';
 
 @NgModule({
   declarations: [
@@ -33,7 +57,13 @@ import { ForecastJsonDataService } from './services/forecast-json-data.service';
     LeafletExtentionDirective,
     EchartsZrClickDirective,
     HoverClassDirective,
-    LoadingSpinnerComponent
+    LoadingSpinnerComponent,
+    ScaffoldComponent,
+    ForecastSettingComponent,
+    LegendComponent,
+    DateToPrevSaturdayPipe,
+    CdkScrollableExtDirective,
+    TargetLabelPipe
   ],
   imports: [
     BrowserModule,
@@ -51,8 +81,27 @@ import { ForecastJsonDataService } from './services/forecast-json-data.service';
        */
       echarts: () => import('echarts'), // or import('./path-to-my-custom-echarts')
     }),
+    BrowserAnimationsModule,
+    LayoutModule,
+    MatToolbarModule,
+    MatButtonModule,
+    MatSidenavModule,
+    MatIconModule,
+    MatListModule,
+    MatCardModule,
+    MatGridListModule,
+    MatMenuModule,
+    MatButtonToggleModule,
+    MatSelectModule,
+    CdkScrollableModule,
+    MatTabsModule,
+    MatExpansionModule,
+    MatTableModule,
+    MatSortModule,
+    MatCheckboxModule
   ],
   providers: [
+    // { provide: ForecastDataSerivce, useClass: ForecastCsvDataService },
     { provide: ForecastDataSerivce, useClass: ForecastJsonDataService },
   ],
   bootstrap: [AppComponent]

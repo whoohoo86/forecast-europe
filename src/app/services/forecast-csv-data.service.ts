@@ -56,14 +56,9 @@ export class ForecastCsvDataService extends ForecastDataSerivce {
       .pipe(shareReplay(1));
   }
 
-  createForecastDataObservable(filter$: Observable<ForecastDataFilter>): Observable<{ availableForecastDates: Date[], data: ForecastData[] }> {
-    if (!filter$) {
-      return of({ availableForecastDates: [], data: [] });
-    }
-
-    return combineLatest([this.forecastData$, filter$]).pipe(map(([rawData, filter]) => {
-      if (!filter || !filter.location) return { availableForecastDates: [], data: [] };
-      return rawData[filter.location!.id][filter.target];
+  createForecastDataObservable(filter: ForecastDataFilter): Observable<{ availableForecastDates: Date[], data: ForecastData[], filter: { target: ForecastTarget, location: LocationLookupItem } }> {
+    return combineLatest([this.forecastData$, filter.filter$]).pipe(map(([rawData, f]) => {
+      return { ...rawData[f.location.id][f.target], filter: { location: f.location, target: f.target } };
     }));
   }
 

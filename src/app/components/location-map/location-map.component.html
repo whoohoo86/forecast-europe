@@ -1,4 +1,5 @@
 <div id="map" *ngIf="mapContext$ | async as mapContext" leaflet [leafletOptions]="options"  (resized)="onMapResized(mapContext.euLayer)"
-  (leafletMapReady)="onMapReady($event)" appLeafletExtention [colorScale]="mapContext.colorScale" [mapTitle]="mapTitle">
-  <div [leafletLayer]="mapContext.euLayer"></div>
+  [leafletLayers]="mapContext.layers"
+  (leafletMapReady)="onMapReady($event)" appLeafletExtention [colorScale]="mapContext.colorScale" [colorScaleHeader]="colorScaleHeader || undefined">
+  <!-- <div [leafletLayer]="mapContext.euLayer"></div> -->
 </div>

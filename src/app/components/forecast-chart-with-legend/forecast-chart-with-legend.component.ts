@@ -123,16 +123,16 @@ export class ForecastChartWithLegendComponent implements OnInit, OnChanges, OnDe
 
         const modelSeries = prev.get(curr.model)!;
 
-        if (this.displaySettings!.displayMode.$type === 'ForecastByDateDisplayMode') {
-          if (curr.timezero.toISOString() === this.displaySettings!.displayMode.forecastDate.toISOString() && curr.target.time_ahead <= this.displaySettings!.displayMode.weeksShown) {
-            modelSeries.data.push(curr);
-          }
-        }
-        else if (this.displaySettings!.displayMode.$type === 'ForecastByHorizonDisplayMode') {
-          if (curr.target.time_ahead <= this.displaySettings!.displayMode.weeksAhead) {
-            modelSeries.data.push(curr);
-          }
-        }
+        // if (this.displaySettings!.displayMode.$type === 'ForecastByDateDisplayMode') {
+        //   if (curr.timezero.toISOString() === this.displaySettings!.displayMode.forecastDate.toISOString() && curr.target.time_ahead <= this.displaySettings!.displayMode.weeksShown) {
+        //     modelSeries.data.push(curr);
+        //   }
+        // }
+        // else if (this.displaySettings!.displayMode.$type === 'ForecastByHorizonDisplayMode') {
+        //   if (curr.target.time_ahead <= this.displaySettings!.displayMode.weeksAhead) {
+        //     modelSeries.data.push(curr);
+        //   }
+        // }
 
         return prev;
       }, new Map<string, ForecastModelData>());

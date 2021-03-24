@@ -1,20 +1,45 @@
 // ::ng-deep {
-  .legend-block {
-    //border: 1px solid black;
-    display: inline-block;
-    width: 10px;
-    height: 10px;
-    border: 1px solid #333;
-  }
 
-  .legend {
-    background-color: white;
-    padding: 10px;
-  }
+.legend {
+  background-color: white;
+  padding: 10px;
+  margin-right: 10px;
 
-  .title {
-    background-color: white;
-    padding: 8px;
-    opacity: 0.8;
+  .legend-header {
     font-size: 120%;
+    font-weight: 500;
   }
+
+  .legend-item-container {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+
+    .legend-item {
+      display: inline-flex;
+      flex-direction: row;
+      flex: 1 1 33%;
+      width: 33%;
+
+      .legend-block {
+        //border: 1px solid black;
+        // display: inline-block;
+        flex: 0 0 auto;
+        width: 14px;
+        height: 14px;
+        border: 1px solid #333;
+      }
+      .legend-label {
+        flex: 1 1 100%;
+        margin-left: 3px;
+      }
+    }
+  }
+}
+
+.leaflet-control.title {
+  background-color: white;
+  padding: 8px;
+  opacity: 0.8;
+  font-size: 120%;
+}
