@@ -36,8 +36,7 @@ export class LocationMapComponent implements OnInit, OnChanges {
     zoomSnap: 0.1,
     zoom: 2.8,
     center: { lng: 5, lat: 51 },
-    layers: [
-    ],
+    layers: [],
   }
 
   private targetLabelPipe = new TargetLabelPipe();
@@ -108,14 +107,14 @@ export class LocationMapComponent implements OnInit, OnChanges {
             layer.on('mouseover', x => {
               layer.setStyle(this.getStateStyle(isSelected, true, { fillColor: fillcolor }));
               setTimeout(() => layer.bringToFront());
-              layer.bringToFront()
+              layer.bringToFront();
             });
 
             layer.on('mouseout', x => {
               layer.setStyle(this.getStateStyle(isSelected, false, { fillColor: fillcolor }))
               if (!isSelected) {
                 setTimeout(() => layer.bringToBack());
-                layer.bringToBack()
+                layer.bringToBack();
               }
             });
           }

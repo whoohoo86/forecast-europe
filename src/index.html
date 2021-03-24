@@ -1,5 +1,6 @@
 <!doctype html>
-<html lang="en" class="h-100">
+<html lang="en">
+
 <head>
   <meta charset="utf-8">
   <title>CovidForecastEcdc</title>
@@ -9,8 +10,26 @@
   <link rel="preconnect" href="https://fonts.gstatic.com">
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons|Material+Icons+Outlined" rel="stylesheet">
+  <script>
+    window.iFrameResizer = {
+      heightCalculationMethod: function () {
+        console.log("CALC HEIGHT");
+        const elem = document.querySelector('*[iframe-height-element]');
+        if(elem){
+          let height = 0;
+          elem.childNodes.forEach(x => height += x.clientHeight);
+          console.log("ELEM", elem, elem.scrollHeight, elem.clientHeight);
+          console.log("child height", height);
+          return height + 1;
+        }
+        return 800;
+      }
+    }
+  </script>
 </head>
+
 <body class="mat-typography">
   <app-root></app-root>
 </body>
+
 </html>

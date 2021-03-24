@@ -34,7 +34,9 @@
               "src/styles.scss",
               "src/theme.scss"
             ],
-            "scripts": []
+            "scripts": [
+              "node_modules/iframe-resizer/js/iframeResizer.contentWindow.js"
+            ]
           },
           "configurations": {
             "production": {

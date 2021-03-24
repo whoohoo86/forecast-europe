@@ -1,7 +1,3 @@
-<!-- <div class="loading-spinner-container" *ngIf="isLoadingForecast || isLoadingTruth">
-  <app-loading-spinner></app-loading-spinner>
-</div> -->
-
 <mat-sidenav-container class="site-container" *ngIf="dataView$ | async as dataView">
   <mat-sidenav [(opened)]="startSideNavOpened" [mode]="(isDesktopWidth$ | async) ? 'side' : 'over'" (closedStart)="closeStartSideNav()" (openedStart)="openStartSideNav()">
     <div class="sidenav-start-container">
@@ -60,7 +56,7 @@
   </mat-sidenav>
 
   <mat-sidenav [(opened)]="endSideNavOpened" mode="side" position="end">
-    <div class="sidenav-end-container">
+    <div class="sidenav-end-container" iframe-height-element>
       <mat-accordion>
         <mat-expansion-panel [(expanded)]="isDisplaySettingOpened" class="mat-elevation-z0"
           (afterExpand)="forceResize()" (afterCollapse)="forceResize()">
@@ -235,3 +231,7 @@
     </div>
   </div>
 </mat-sidenav-container>
+
+<!-- <div class="loading-spinner-container" *ngIf="isLoadingForecast || isLoadingTruth">
+  <app-loading-spinner></app-loading-spinner>
+</div> -->
