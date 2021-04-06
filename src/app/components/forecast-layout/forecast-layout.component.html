@@ -18,7 +18,7 @@
   </mat-sidenav>
 
   <mat-sidenav *ngIf="!(isSmallWidth$ | async)" [(opened)]="endSideNavOpened" mode="side" position="end">
-    <div class="sidenav-end-container" iframe-height-alt>
+    <div class="sidenav-end-container">
       <mat-accordion>
         <mat-expansion-panel [(expanded)]="isDisplaySettingOpened" class="mat-elevation-z0"
           (afterExpand)="forceResize()" (afterCollapse)="forceResize()">
@@ -97,7 +97,7 @@
       </div>
     </div>
 
-    <div class="main-content" iframe-height>
+    <div class="main-content" [class.small-width]="isSmallWidth$ | async">
       <div class="header-container">
         <ng-template [cdkPortalOutlet]="headerPortal$ | async"></ng-template>
         <button mat-icon-button *ngIf="isSmallWidth$ | async" class="display-setting-toggle" (click)="isSmallDisplaySettingsOpened = !isSmallDisplaySettingsOpened"><mat-icon>settings</mat-icon></button>

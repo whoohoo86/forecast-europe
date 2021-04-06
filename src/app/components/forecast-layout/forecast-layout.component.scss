@@ -165,8 +165,12 @@
       flex-direction: column;
 
       flex: 1 1 100%;
-      max-width: calc(100% - 47px);
-      padding-left: 47px;
+
+
+      &.small-width {
+        padding-left: 47px;
+        max-width: calc(100% - 47px);
+      }
 
       .header-container {
         .display-setting-toggle {

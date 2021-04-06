@@ -22,7 +22,6 @@ This project was generated with [Angular CLI](https://github.com/angular/angular
 - Zweites Repo für TestUmgebung, damit Seb und Johannes gucken können
 - HTML von Hauptseite (<https://covid19forecasthub.eu/>) checken und ggf. Verbesserungsvorschläge machen
 - Einbettung des IFrames mit flexHeight 1 1 100
-- ?
 
 ### Done
 
