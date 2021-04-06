@@ -12,6 +12,7 @@ export const environment = {
       csv: 'https://raw.githubusercontent.com/jbracher/covid19-forecast-hub-europe/main/viz/forecasts_to_plot.csv',
       json: 'https://raw.githubusercontent.com/epiforecasts/covid19-forecast-hub-europe/main/viz/forecasts_to_plot.json'
     },
-    truthData: 'https://raw.githubusercontent.com/epiforecasts/covid19-forecast-hub-europe/main/viz/truth_to_plot.csv'
+    truthData: 'https://raw.githubusercontent.com/epiforecasts/covid19-forecast-hub-europe/main/viz/truth_to_plot.csv',
+    metadata: 'https://raw.githubusercontent.com/epiforecasts/covid19-forecast-hub-europe/main/viz/metadata.json'
   }
 };
