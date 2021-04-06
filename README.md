@@ -2,22 +2,6 @@
 
 This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 11.0.2.
 
-## Offene Fragen
-
-- ~~hat das ecdc einen TileService (hintergrundbilder für karte)?~~
-- ~~Wie sollen Modellfarben bestimmt werden?~~
-- ~~Location by ip -> externer call. ist das ok oder lieber nicht?~~
-
-- ~~Könnt ihr mir ein Shape, Geojson, etc. für die Länder bereitstellen? Seb guckt~~
-
-- ~~Karte wieder nach Inzidenz (pro 100.000 Einwohner) einfärben, Tooltip mit Inzidenz und absolutem Wert? Beides~~
-- ~~Gibt es Stylevorgaben? Farben, Logo, Corporate Design? ja farben: <https://github.com/EU-ECDC/EcdcColors>. kein drum herum wie header, logo, etc... weil via iframe eingebunden wird~~
-- ~~Wie werden DefaultModels (Sichtbare Modelle zum Start) und EnsembleModels ermittelt? Neue Datei (json) im git repo mit `{
-  ensembleModelNames: ['LANL-GrowthRate'],
-  defaultModelNames: ['team_abc-model_def']
-}`~~
-- ~~Was macht das Scenario genau? Ein DropDown mit nur einem Item ohne dahinterliegender Logik fühlt sich komisch an zu implementieren und verwirrt in der Bedienung. erstmal weglassen und wenn konkret überlegen wie und wo. -> erstmal nicht einbauen~~
-
 ## TODOs
 
 - ~~Map~~
@@ -37,7 +21,8 @@ This project was generated with [Angular CLI](https://github.com/angular/angular
 - ~~App in Edge und Firefox ausprobieren~~
 - Zweites Repo für TestUmgebung, damit Seb und Johannes gucken können
 - HTML von Hauptseite (<https://covid19forecasthub.eu/>) checken und ggf. Verbesserungsvorschläge machen
-- Einbettung des IFrames mit flexHeight 1 1 100%
+- Einbettung des IFrames mit flexHeight 1 1 100
+- ?
 
 ### Done
 
