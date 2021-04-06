@@ -1,0 +1,217 @@
+@import "~@angular/material/theming";
+
+.site-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+
+  mat-toolbar.settings-header {
+    padding-top: 16px;
+    padding-bottom: 16px;
+
+    font-weight: 500;
+    font-size: 20px;
+    line-height: 32px;
+  }
+
+  mat-expansion-panel-header.settings-header {
+    font-weight: 500;
+    font-size: 20px;
+    line-height: 32px;
+
+    padding: 0 16px;
+    .mat-expansion-panel-header-title {
+      align-items: center;
+    }
+  }
+
+  .sidenav-start-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    width: 100%;
+    min-width: 350px;
+    max-width: 350px;
+
+    .sidenav-start-toggle-button {
+      margin-right: -16px;
+    }
+  }
+
+  .sidenav-end-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    width: 100%;
+    max-width: 440px;
+
+    ::ng-deep {
+      .mat-expansion-panel-header {
+        background-color: #f5f5f5;
+        border-radius: 0;
+        height: 64px;
+      }
+
+      .mat-expansion-panel {
+        border-radius: 0;
+      }
+
+      .mat-expansion-panel-body {
+        padding: 0;
+      }
+    }
+  }
+
+  .main-content-container {
+    display: flex;
+    flex-direction: row;
+    height: 100%;
+
+    .sidenav-start-access {
+      position: fixed;
+      top: 0;
+      left: 0;
+      bottom: 0;
+
+      // flex: 0 0 48px;
+      max-height: 100%;
+      overflow: hidden;
+      border-right: solid 1px rgba(0, 0, 0, 0.12);
+
+      // background-color: orange;
+
+      .sidenav-start-access-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        max-height: 100%;
+        background: white;
+
+        // .access-title-icon {
+        // margin-left: auto;
+        // margin-right: auto;
+        // font-weight: bold;
+        // margin-top: 5px;
+        // }
+
+        // .scroll-button {
+        //   // opacity: 0.8;
+        //   margin: 3px;
+
+        //   .mat-icon {
+        //     // font-size: 44px;
+        //     // width: 44px;
+        //     // height: 44px;
+        //     // line-height: 44px;
+        //     font-size: 48px;
+        //     transform: translate(-12px, 0);
+        //   }
+
+        //   &:not(.mat-button-disabled) {
+        //     color: rgba(0, 0, 0, 0.54);
+        //   }
+
+        //   // &.disabled {
+        //   //   opacity: 0.5;
+        //   // }
+
+        //   // &:hover:not(.disabled) {
+        //   //   opacity: 1;
+        //   // }
+        // }
+
+        // .access-button-container {
+        //   // overflow: scroll;
+        //   display: flex;
+        //   flex-direction: column;
+        //   align-items: center;
+
+        //   overflow-y: scroll;
+        //   scrollbar-width: none; /* Firefox */
+        //   -ms-overflow-style: none; /* Internet Explorer 10+ */
+
+        //   width: 100%;
+        // }
+
+        // .access-button-container::-webkit-scrollbar {
+        //   /* WebKit */
+        //   width: 0;
+        //   height: 0;
+        // }
+
+        // .mat-divider {
+        //   width: 100%;
+        //   margin: 5px 3px;
+        // }
+
+        .access-button {
+          margin-bottom: 2px;
+        }
+      }
+    }
+
+    .sidenav-start-access.hidden {
+      display: none;
+
+      & + .main-content {
+        padding-left: 0;
+      }
+    }
+
+    .main-content {
+      display: flex;
+      flex-direction: column;
+
+      flex: 1 1 100%;
+      max-width: calc(100% - 47px);
+      padding-left: 47px;
+
+      .header-container {
+        .display-setting-toggle {
+          z-index: 1;
+          color: white;
+          position: absolute;
+          right: 0;
+          top: 10px;
+        }
+      }
+
+      .display-settings-container {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        max-height: 0;
+        background-color: white;
+        transition: max-height 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+
+        &.open {
+          height: auto;
+          max-height: 100%;
+        }
+
+        & > * {
+          flex: 1;
+          min-width: 380px;
+          max-height: 100%;
+          overflow: hidden;
+        }
+      }
+
+      .chart-container {
+        background-color: white;
+        flex: 1 1 100%;
+        padding: 10px 15px;
+        overflow: hidden;
+        min-height: 380px;
+        max-height: 880px;
+        z-index: 1;
+      }
+    }
+
+    .sidenav-end-access {
+      flex: 0 0 40px;
+    }
+  }
+}

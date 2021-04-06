@@ -170,11 +170,11 @@
       <mat-toolbar class="settings-header forecast-settings-header">
         <mat-icon>show_chart</mat-icon>
         <span>Forecast Models</span>
-        <button mat-raised-button style="margin-left: auto;" (click)="changeVisbileModels([])">None</button>
+        <button mat-raised-button style="margin-left: auto;" (click)="changeVisibleModels([])">None</button>
         <button mat-raised-button *ngIf="ensembleModelNames$ | async as ensembleModelNames" style="margin: 0 5px;"
-          (click)="changeVisbileModels(ensembleModelNames)">Ensemble</button>
+          (click)="changeVisibleModels(ensembleModelNames)">Ensemble</button>
         <button mat-raised-button *ngIf="allModelNames$ | async as allModelNames"
-          (click)="changeVisbileModels(allModelNames)">All</button>
+          (click)="changeVisibleModels(allModelNames)">All</button>
       </mat-toolbar>
       <mat-card class="model-legend-card">
         <app-legend [models]="dataView.forecasts" [visibleModels]="visibleModels$ | async"

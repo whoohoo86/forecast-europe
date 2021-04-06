@@ -1,0 +1,124 @@
+<mat-sidenav-container class="site-container">
+  <mat-sidenav [(opened)]="startSideNavOpened" [mode]="(isDesktopWidth$ | async) ? 'side' : 'over'"
+    (closedStart)="closeStartSideNav()" (openedStart)="openStartSideNav()">
+    <div class="sidenav-start-container">
+      <mat-toolbar class="settings-header">
+        <mat-icon>filter_alt</mat-icon>
+        <span>Data Selection</span>
+        <div class="horizontal-flex-spacer"></div>
+        <button mat-icon-button class="sidenav-start-toggle-button" (click)="closeStartSideNav()">
+          <mat-icon>arrow_left</mat-icon>
+        </button>
+      </mat-toolbar>
+
+      <ng-template [cdkPortalOutlet]="targetPortal$ | async"></ng-template>
+
+      <ng-template [cdkPortalOutlet]="locationPortal$ | async"></ng-template>
+    </div>
+  </mat-sidenav>
+
+  <mat-sidenav *ngIf="!(isSmallWidth$ | async)" [(opened)]="endSideNavOpened" mode="side" position="end">
+    <div class="sidenav-end-container" iframe-height-alt>
+      <mat-accordion>
+        <mat-expansion-panel [(expanded)]="isDisplaySettingOpened" class="mat-elevation-z0"
+          (afterExpand)="forceResize()" (afterCollapse)="forceResize()">
+          <mat-expansion-panel-header class="settings-header">
+            <mat-panel-title>
+              <mat-icon>settings</mat-icon> Display Settings
+            </mat-panel-title>
+          </mat-expansion-panel-header>
+
+          <ng-template [cdkPortalOutlet]="predictionIntervalPortal$ | async"></ng-template>
+
+
+          <ng-template [cdkPortalOutlet]="displayModePortal$ | async"></ng-template>
+
+          <!-- <mat-card class="settings-card displaymode-card">
+            <mat-card-title-group>
+              <mat-card-title>Display Mode</mat-card-title>
+              <mat-card-subtitle>You can either look at one through four-week-ahead forecasts made at a specific time
+                point or show all forecasts for a specific forecast horizon.</mat-card-subtitle>
+            </mat-card-title-group>
+            <mat-card-content>
+            </mat-card-content>
+          </mat-card> -->
+        </mat-expansion-panel>
+      </mat-accordion>
+
+      <ng-template [cdkPortalOutlet]="legendPortal$ | async"></ng-template>
+
+      <!-- <mat-toolbar class="settings-header forecast-settings-header">
+        <mat-icon>show_chart</mat-icon>
+        <span>Forecast Models</span>
+        <button mat-raised-button style="margin-left: auto;" (click)="changeVisbileModels([])">None</button>
+        <button mat-raised-button *ngIf="ensembleModelNames$ | async as ensembleModelNames" style="margin: 0 5px;"
+          (click)="changeVisbileModels(ensembleModelNames)">Ensemble</button>
+        <button mat-raised-button *ngIf="allModelNames$ | async as allModelNames"
+          (click)="changeVisbileModels(allModelNames)">All</button>
+      </mat-toolbar>
+      <mat-card class="model-legend-card">
+        <app-legend [models]="dataView.forecasts" [visibleModels]="visibleModels$ | async"
+          (visibleModelsChanged)="changeVisibleModels($event)" (highlightModel)="chart.highlight($event)"
+          (stopHighlightModel)="chart.stopHighlight()"></app-legend>
+      </mat-card> -->
+    </div>
+  </mat-sidenav>
+
+  <div class="main-content-container">
+    <div class="sidenav-start-access" [ngClass]="{'hidden': startSideNavOpened}">
+      <div class="sidenav-start-access-container">
+        <button mat-icon-button class="access-button" (click)="openStartSideNav()">
+          <mat-icon>arrow_right</mat-icon>
+        </button>
+
+        <ng-template [cdkPortalOutlet]="quickAccessPortal$ | async"></ng-template>
+
+        <!-- <mat-icon class="access-title-icon">adjust</mat-icon>
+        <button mat-mini-fab title="Cases" class="access-button mat-elevation-z3"
+          [color]="dataView.filter.target === ForecastTargetEnum.Cases ? 'primary' : 'basic'"
+          (click)="changeTarget(ForecastTargetEnum.Cases)">C</button>
+        <button mat-mini-fab title="Deaths" class="access-button mat-elevation-z3"
+          [color]="dataView.filter.target === ForecastTargetEnum.Death ? 'primary' : 'basic'"
+          (click)="changeTarget(ForecastTargetEnum.Death)">D</button>
+
+        <mat-icon class="access-title-icon">location_on</mat-icon>
+        <button mat-icon-button (click)="scrollUp()" [disabled]="locationScroller.top === 0" class="scroll-button">
+          <mat-icon>arrow_drop_up</mat-icon>
+        </button>
+        <div class="access-button-container" cdkScrollable #locationScroller="cdkScrollableExt" cdkScrollableExt>
+          <button mat-mini-fab *ngFor="let location of locationsOrderedById$ | async" [title]="location.name"
+            class="access-button mat-elevation-z3" [color]="dataView.filter.location === location ? 'primary' : 'basic'"
+            (click)="changeLocation(location)">{{location.id}}</button>
+        </div>
+        <button mat-icon-button (click)="scrollDown()" class="scroll-button"
+          [disabled]="locationScroller.top === locationScroller.topMax">
+          <mat-icon>arrow_drop_down</mat-icon>
+        </button> -->
+      </div>
+    </div>
+
+    <div class="main-content" iframe-height>
+      <div class="header-container">
+        <ng-template [cdkPortalOutlet]="headerPortal$ | async"></ng-template>
+        <button mat-icon-button *ngIf="isSmallWidth$ | async" class="display-setting-toggle" (click)="isSmallDisplaySettingsOpened = !isSmallDisplaySettingsOpened"><mat-icon>settings</mat-icon></button>
+      </div>
+
+      <div class="display-settings-container" *ngIf="isSmallWidth$ | async" [class.open]="isSmallDisplaySettingsOpened">
+        <div>
+          <ng-template [cdkPortalOutlet]="predictionIntervalPortal$ | async"></ng-template>
+        </div>
+        <div>
+          <ng-template [cdkPortalOutlet]="displayModePortal$ | async"></ng-template>
+        </div>
+      </div>
+
+      <div class="chart-container">
+        <ng-template [cdkPortalOutlet]="chartPortal$ | async"></ng-template>
+      </div>
+
+      <div class="legend-container" *ngIf="isSmallWidth$ | async">
+        <ng-template [cdkPortalOutlet]="legendPortal$ | async"></ng-template>
+      </div>
+    </div>
+  </div>
+</mat-sidenav-container>

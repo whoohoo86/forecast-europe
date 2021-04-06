@@ -28,8 +28,16 @@ This project was generated with [Angular CLI](https://github.com/angular/angular
   - ~~Sortierung in Tabelle nicht casesensitiv (Großbuchstaben zuerst)~~
 - ~~Chart~~
   - ~~y-axis mit scale=true, datazoom filter~~
-- Demoseite mit eingebettetem IFrame (height 100%)
-- Small Display Layout
+- ~~Demoseite mit eingebettetem IFrame (height 100%)~~
+- ~~Tooltips für Modelle~~
+  - ~~Hi @fabian , es gab ja noch die offene Frage bzgl Tooltips mit Modell-Infos für die Legende. Daniel hat hier: <https://github.com/epiforecasts/covid19-forecast-hub-europe/blob/main/viz/metadata.json> ein JSON angelegt, in dem alle Metadaten verfügbar sind. Damit könntest du (sobald du mal wieder ein kleines Zeitfenster hast) ein Tooltip aufsetzen. Das Feld "methods" sollte auf jeden Fall rein. Je nach dem, wie aufwändig du das gestalten magst könnten noch "team_name" und "model_name" rein sowie evtl "data_inputs" und "website_url". Die Beispiele, die du gezeigt hast sahen gut aus, wenn du in die Richtung was machen könntest wäre das super. Danke & erst einmal ein schönes Wochenende!~~
+- ~~Small Display Layout~~
+- ~~andere geo codes nutzen~~
+  - ~~<https://raw.githubusercontent.com/epiforecasts/covid19-forecast-hub-europe/main/viz/location_codes.csv> in dieses ändern: <https://raw.githubusercontent.com/epiforecasts/covid19-forecast-hub-europe/main/data-locations/locations_eu.csv>~~
+- ~~App in Edge und Firefox ausprobieren~~
+- Zweites Repo für TestUmgebung, damit Seb und Johannes gucken können
+- HTML von Hauptseite (<https://covid19forecasthub.eu/>) checken und ggf. Verbesserungsvorschläge machen
+- Einbettung des IFrames mit flexHeight 1 1 100%
 
 ### Done
 

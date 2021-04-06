@@ -2,6 +2,7 @@ import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
 import { HttpClientModule } from '@angular/common/http';
 
+import { MdePopoverModule } from '@material-extended/mde';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { LocationMapComponent } from './components/location-map/location-map.component';
@@ -37,6 +38,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { CdkScrollableModule } from '@angular/cdk/scrolling'
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatTableModule } from '@angular/material/table';
+import { PortalModule } from '@angular/cdk/portal';
 import { MatSortModule } from '@angular/material/sort';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatExpansionModule } from '@angular/material/expansion';
@@ -45,6 +47,9 @@ import { LegendComponent } from './components/legend/legend.component';
 import { DateToPrevSaturdayPipe } from './pipes/date-to-prev-saturday.pipe';
 import { CdkScrollableExtDirective } from './directives/cdk-scrollable-ext.directive';
 import { TargetLabelPipe } from './pipes/target-label.pipe';
+import { ForecastLayoutComponent } from './components/forecast-layout/forecast-layout.component';
+import { ForecastLayoutItemComponent } from './components/forecast-layout-item/forecast-layout-item.component';
+import { ForecastRebuildComponent } from './pages/forecast-rebuild/forecast-rebuild.component';
 
 @NgModule({
   declarations: [
@@ -63,7 +68,10 @@ import { TargetLabelPipe } from './pipes/target-label.pipe';
     LegendComponent,
     DateToPrevSaturdayPipe,
     CdkScrollableExtDirective,
-    TargetLabelPipe
+    TargetLabelPipe,
+    ForecastLayoutComponent,
+    ForecastLayoutItemComponent,
+    ForecastRebuildComponent
   ],
   imports: [
     BrowserModule,
@@ -72,6 +80,7 @@ import { TargetLabelPipe } from './pipes/target-label.pipe';
     AppRoutingModule,
     LeafletModule,
     FontAwesomeModule,
+    PortalModule,
     NgbModule,
     NgxEchartsModule.forRoot({
       /**
@@ -98,7 +107,8 @@ import { TargetLabelPipe } from './pipes/target-label.pipe';
     MatExpansionModule,
     MatTableModule,
     MatSortModule,
-    MatCheckboxModule
+    MatCheckboxModule,
+    MdePopoverModule
   ],
   providers: [
     // { provide: ForecastDataSerivce, useClass: ForecastCsvDataService },

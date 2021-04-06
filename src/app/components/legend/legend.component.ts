@@ -1,8 +1,16 @@
-import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, ComponentRef, ElementRef, EventEmitter, Input, OnChanges, OnInit, Output, QueryList, SimpleChanges, TemplateRef, ViewChild, ViewChildren, ViewContainerRef } from '@angular/core';
 import { MatSort } from '@angular/material/sort';
-import { MatTable, MatTableDataSource } from '@angular/material/table';
+import { MatRow, MatTable, MatTableDataSource } from '@angular/material/table';
 import { ForecastModelData } from 'src/app/models/forecast-data';
 import * as _ from 'lodash-es';
+import { MdePopover, MdePopoverTrigger } from '@material-extended/mde';
+import { Observable, of } from 'rxjs';
+import { ModelMetadata } from 'src/app/models/model-metadata';
+import { MetadataService } from 'src/app/services/metadata.service';
+import { OverlayRef, Overlay, OverlayPositionBuilder } from '@angular/cdk/overlay';
+import { ComponentPortal, TemplatePortal } from '@angular/cdk/portal';
+import { JsonpClientBackend } from '@angular/common/http';
+import { map, tap } from 'rxjs/operators';
 
 @Component({
   selector: 'app-legend',
@@ -20,9 +28,13 @@ export class LegendComponent implements OnInit, OnChanges {
   dataSource: MatTableDataSource<ForecastModelData>;
   displayedColumns = ['color', 'model', 'visibility'];
 
+  private overlayRef?: OverlayRef;
+  tooltipContext$: Observable<{ metadata: ModelMetadata, row: ForecastModelData } | undefined> = of(undefined);
+
+  @ViewChild('tooltip') tooltipPortalContent!: TemplateRef<unknown>;
   @ViewChild(MatSort) sort!: MatSort;
 
-  constructor() {
+  constructor(private elementRef: ElementRef, private viewContainerRef: ViewContainerRef, private overlay: Overlay, private overlayPositionBuilder: OverlayPositionBuilder, private metadataService: MetadataService) {
     this.dataSource = new MatTableDataSource();
 
     this.dataSource.sortingDataAccessor = (row, colName) => {
@@ -47,18 +59,13 @@ export class LegendComponent implements OnInit, OnChanges {
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes.models) {
-      // this.dataSource.data = _.flatMap(this.models, x => {
-      //   let firstChar = x.model[0];
-      //   firstChar = this.isUpperCase(firstChar) ? firstChar.toLowerCase() : firstChar.toUpperCase();
-      //   const model = `${firstChar}${x.model.substr(1)}`;
-      //   const copy = { ...x, model: model };
-      //   return [x, copy]
-      // }) || [];
       this.dataSource.data = this.models || [];
     }
   }
 
   ngOnInit(): void {
+
+    this.overlayRef = this.overlay.create();
   }
 
   rowTrackBy(index: number, row: ForecastModelData) {
@@ -69,7 +76,64 @@ export class LegendComponent implements OnInit, OnChanges {
     return !!this.visibleModels && this.visibleModels.indexOf(model) > -1;
   }
 
-  highlight(model: string | undefined) {
+  onMouseEnter(row: ForecastModelData, event: MouseEvent) {
+    this.highlight(row.model);
+
+    this.canCloseTooltip = false;
+    this.showTooltip(row, event.target);
+  }
+
+  onMouseOut(row: ForecastModelData, event: any) {
+    this.highlight(undefined);
+
+    this.canCloseTooltip = true;
+    this.hideTooltip();
+  }
+
+  showTooltip(row: ForecastModelData | undefined, atElement: any) {
+    this.tooltipContext$ = row !== undefined
+      ? this.metadataService.getModelMetadata(row.model).pipe(map(x => {
+        if (x === undefined) return undefined;
+        return { metadata: x, row };
+      }))
+      : of(undefined);
+
+    if (this.overlayRef) {
+      const positionStrategy = this.overlayPositionBuilder
+        .flexibleConnectedTo(atElement)
+        .withPositions([
+          { originX: 'center', originY: 'top', overlayX: 'center', overlayY: 'bottom' },
+          { originX: 'center', originY: 'bottom', overlayX: 'center', overlayY: 'top' }
+        ]);
+      this.overlayRef.updatePositionStrategy(positionStrategy);
+
+      if (!this.overlayRef.hasAttached()) {
+        const tooltipPortal = new TemplatePortal(this.tooltipPortalContent, this.viewContainerRef);
+        this.overlayRef.attach(tooltipPortal);
+      }
+    }
+  }
+
+  hideTooltip() {
+    setTimeout(() => {
+      const closed = this.closeTooltip();
+      if (!closed) {
+        this.hideTooltip();
+      }
+    }, 500);
+  }
+
+  canCloseTooltip = true;
+
+  private closeTooltip() {
+    if (this.canCloseTooltip && this.overlayRef && this.overlayRef.hasAttached()) {
+      this.overlayRef.detach();
+      return true;
+    }
+    return false;
+  }
+
+  private highlight(model: string | undefined) {
     if (model === undefined) {
       this.stopHighlightModel.emit();
     } else {
@@ -86,5 +150,6 @@ export class LegendComponent implements OnInit, OnChanges {
       this.visibleModelsChanged.emit([...models, model]);
     }
   }
+
 
 }
