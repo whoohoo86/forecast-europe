@@ -3,14 +3,12 @@ import { MatSort } from '@angular/material/sort';
 import { MatRow, MatTable, MatTableDataSource } from '@angular/material/table';
 import { ForecastModelData } from 'src/app/models/forecast-data';
 import * as _ from 'lodash-es';
-import { MdePopover, MdePopoverTrigger } from '@material-extended/mde';
 import { Observable, of } from 'rxjs';
 import { ModelMetadata } from 'src/app/models/model-metadata';
 import { MetadataService } from 'src/app/services/metadata.service';
 import { OverlayRef, Overlay, OverlayPositionBuilder } from '@angular/cdk/overlay';
-import { ComponentPortal, TemplatePortal } from '@angular/cdk/portal';
-import { JsonpClientBackend } from '@angular/common/http';
-import { map, tap } from 'rxjs/operators';
+import { TemplatePortal } from '@angular/cdk/portal';
+import { map } from 'rxjs/operators';
 
 @Component({
   selector: 'app-legend',

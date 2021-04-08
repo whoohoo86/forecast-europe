@@ -19,7 +19,7 @@ This project was generated with [Angular CLI](https://github.com/angular/angular
 - ~~andere geo codes nutzen~~
   - ~~<https://raw.githubusercontent.com/epiforecasts/covid19-forecast-hub-europe/main/viz/location_codes.csv> in dieses ändern: <https://raw.githubusercontent.com/epiforecasts/covid19-forecast-hub-europe/main/data-locations/locations_eu.csv>~~
 - ~~App in Edge und Firefox ausprobieren~~
-- Zweites Repo für TestUmgebung, damit Seb und Johannes gucken können
+- ~~Zweites Repo für TestUmgebung, damit Seb und Johannes gucken können~~
 - HTML von Hauptseite (<https://covid19forecasthub.eu/>) checken und ggf. Verbesserungsvorschläge machen
 - Einbettung des IFrames mit flexHeight 1 1 100
 

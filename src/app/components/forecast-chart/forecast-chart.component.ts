@@ -12,6 +12,7 @@ import { ForecastTarget } from 'src/app/models/forecast-target';
 import { LocationLookupItem } from 'src/app/models/location-lookup';
 import { DateToPrevSaturdayPipe } from 'src/app/pipes/date-to-prev-saturday.pipe';
 import { TargetLabelPipe } from 'src/app/pipes/target-label.pipe';
+import { preserveWhitespacesDefault } from '@angular/compiler';
 
 @Component({
   selector: 'app-forecast-chart',
@@ -46,7 +47,8 @@ export class ForecastChartComponent implements OnInit, OnChanges {
     tooltip: {
       trigger: 'axis' as 'axis',
       axisPointer: { show: true },
-      formatter: undefined as any
+      formatter: undefined as any,
+      position: [10, 10]
     },
     dataZoom: [
       { type: 'inside', start: 80, end: 100, filterMode: 'weakFilter' as 'weakFilter' },
@@ -92,6 +94,14 @@ export class ForecastChartComponent implements OnInit, OnChanges {
 
   onAxisPointerClick(event: [Date, any]) {
     this.onForecastDateChanged.emit(event[0]);
+  }
+
+  onChartMouseOver(event: any) {
+    console.log("MOUSE OVER", event);
+  }
+
+  onChartMouseOut(event: any) {
+    console.log("MOUSE OUT", event);
   }
 
   private highlightedModel?: string;
@@ -163,11 +173,10 @@ export class ForecastChartComponent implements OnInit, OnChanges {
 
     }
 
-    console.log("CHARTOPTIONS", newChartOption);
+    // console.log("CHARTOPTIONS", newChartOption);
     this.chartOption = newChartOption;
   }
 
-  // TODO: refactor seriesData erzeugung um neuen serien zu entsprechen + area wieder mit in tooltip
   private createSeriesByForecastHorizon(ci: QuantileType | undefined, displayMode: ForecastByHorizonDisplayMode): any[] {
     const forecasts = this.getVisibleForecastModels();
     if (!forecasts || forecasts.length === 0) {
@@ -203,18 +212,39 @@ export class ForecastChartComponent implements OnInit, OnChanges {
         return prev;
       }, new Map<string, { line: any[], area: Map<string, [any, any]> }>());
 
-      const a = _.flatMap([...seriesData.values()], (x, i, array) => {
-        console.log("line", x.line);
+      const a = _.reduce([...seriesData.values()], (prev, x, i, array) => {
+
+        const decorateArea = (toDecorate: { value: any[] }, dateOffset: (x: Date) => Date) => {
+          const areaKey = dateOffset(toDecorate.value[0]).toISOString();
+          if (x.area.has(areaKey)) {
+            return { value: [...toDecorate.value, x.area.get(areaKey)] };
+          }
+          return toDecorate;
+        }
+        // console.log("line", x.line);
+
+        prev.area.push(...x.area.values());
+
         if (i === 0) {
           const p1 = [x.line[1].value[0], x.line[1].value[1]];
           const oldDate = p1[0];
           p1[0] = addMinutes(p1[0], -1);
-          return [x.line[0], { value: p1 }, { value: [oldDate, null] }, { area: [...x.area.values()] }];
+
+          prev.line.push(decorateArea(x.line[0], d => d));
+          prev.line.push(decorateArea({ value: p1 }, d => addMinutes(d, 1)));
+          prev.line.push(decorateArea({ value: [oldDate, null] }, d => d));
+
+          return prev;
+          // return [x.line[0], { value: p1 }, { value: [oldDate, null] }, { area: [...x.area.values()] }];
         }
         if (i === array.length - 1) {
           const p0 = [x.line[0].value[0], x.line[0].value[1]];
           p0[0] = addMinutes(p0[0], 1);
-          return [{ value: p0 }, x.line[1], { area: [...x.area.values()] }];
+
+          prev.line.push(decorateArea({ value: p0 }, d => addMinutes(d, -1)));
+          prev.line.push(decorateArea(x.line[1], d => d));
+
+          return prev;
         }
 
         const p0 = [x.line[0].value[0], x.line[0].value[1]];
@@ -224,10 +254,13 @@ export class ForecastChartComponent implements OnInit, OnChanges {
         const oldDate = p1[0];
         p1[0] = addMinutes(p1[0], -1);
 
-        return [{ value: p0 }, { value: p1 }, { value: [oldDate, null] }, { area: [...x.area.values()] }];
-      });
+        prev.line.push(decorateArea({ value: p0 }, d => addMinutes(d, -1)));
+        prev.line.push(decorateArea({ value: p1 }, d => addMinutes(d, 1)));
+        prev.line.push(decorateArea({ value: [oldDate, null] }, d => d));
+        return prev;
 
-      console.log("A", a);
+      }, { line: [] as any[], area: [] as any[] });
+
       const id = `${this.getDataFilterId()}-${modelData.model}`
 
       const result = [
@@ -235,24 +268,17 @@ export class ForecastChartComponent implements OnInit, OnChanges {
           type: 'line',
           name: modelData.model,
           id: id,
-          data: a.filter(x => x.hasOwnProperty('value')).map(l => {
-            // const area = x.area.get(l.value[0].toISOString());
-            // return { value: [l.value[0], l.value[1], area?.map(a => a.yAxis) || undefined] };
-            return { value: l.value }
-          }),
+          data: a.line,
           color: modelData.color,
           emphasis: {
             focus: 'series',
-            // blurScope: 'global'
           },
           markArea: {
             itemStyle: {
               color: modelData.color,
               opacity: 0.4
             },
-            data: _.flatMap(a.filter(x => x.hasOwnProperty('area')), x => {
-              return x.area;
-            })
+            data: a.area,
           },
           symbolSize: 6
         },
@@ -260,168 +286,26 @@ export class ForecastChartComponent implements OnInit, OnChanges {
           type: 'line',
           name: modelData.model,
           id: `${id}-ci`,
-          data: _.flatMap(a.filter(x => x.hasOwnProperty('area')), x => {
-            return _.flatMap(x.area, ([d0, d1]: [any, any]) => [{ value: [d0.xAxis, d0.yAxis] }, { value: [d1.xAxis, d1.yAxis] }]);
-          }),
-          // data: _.flatMap(a.filter(x => x.hasOwnProperty('area')), ([d0, d1]) => [{ value: [d0.xAxis, d0.yAxis] }, { value: [d1.xAxis, d1.yAxis] }]),
-          // silent: true,
-          // symbol: 'none',
+          data: _.flatMap(a.area, ([d0, d1]: [any, any]) => [{ value: [d0.xAxis, d0.yAxis] }, { value: [d1.xAxis, d1.yAxis] }]),
           color: modelData.color,
-          // emphasis: {
-          //   focus: 'self'
-          // },
+          silent: true,
           itemStyle: {
             opacity: 0
           },
           lineStyle: {
             opacity: 0
           },
-          // markArea: {
-          //   itemStyle: {
-          //     color: modelData.color,
-          //     opacity: 0.4
-          //   },
-          //   data: [...x.area.values()]
-          // },
         }
       ];
 
-      // const result = _.flatMap([...seriesData.values()], (x, i) => {
-      //   const id = `${this.getDataFilterId()}-${modelData.model}-${i}`
-      //   return [{
-      //     type: 'line',
-      //     name: modelData.model,
-      //     id: id,
-      //     data: x.line.map(l => {
-      //       const area = x.area.get(l.value[0].toISOString());
-      //       return { value: [l.value[0], l.value[1], area?.map(a => a.yAxis) || undefined] };
-      //     }),
-      //     color: modelData.color,
-      //     emphasis: {
-      //       // focus: 'series',
-      //       // blurScope: 'global'
-      //     },
-      //     symbolSize: 6
-      //   },
-      //   {
-      //     type: 'line',
-      //     name: modelData.model,
-      //     id: `${id}-ci`,
-      //     data: _.flatMap([...x.area.values()], ([d0, d1]) => [{ value: [d0.xAxis, d0.yAxis] }, { value: [d1.xAxis, d1.yAxis] }]),
-      //     silent: true,
-      //     symbol: 'none',
-      //     color: modelData.color,
-      //     // emphasis: {
-      //     //   focus: 'self'
-      //     // },
-      //     itemStyle: {
-      //       opacity: 0
-      //     },
-      //     lineStyle: {
-      //       opacity: 0
-      //     },
-      //     markArea: {
-      //       itemStyle: {
-      //         color: modelData.color,
-      //         opacity: 0.4
-      //       },
-      //       data: [...x.area.values()]
-      //     },
-      //   }]
-      // });
-
-      console.log("series", result);
       return result;
     });
   }
 
-  // private createSeriesByForecastHorizon(ci: QuantileType | undefined, displayMode: ForecastByHorizonDisplayMode): any[] {
-  //   const forecasts = this.getVisibleForecastModels();
-  //   if (!forecasts || forecasts.length === 0) {
-  //     return [];
-  //   }
-
-  //   return _.flatMap(forecasts, modelData => {
-  //     const seriesData = _.reduce(modelData.data, (prev, curr) => {
-  //       const timezeroStr = curr.timezero.toISOString();
-  //       if (curr.type === ForecastType.Point && curr.target.time_ahead === displayMode.weeksAhead || curr.type === ForecastType.Observed) {
-  //         if (!prev.has(timezeroStr)) {
-  //           prev.set(timezeroStr, { line: [], area: new Map() })
-  //         }
-  //         prev.get(timezeroStr)!.line.push({ value: [curr.target.end_date, curr.value] });
-  //       } else if (curr.type === ForecastType.Quantile && curr.target.time_ahead === displayMode.weeksAhead && curr.quantile && curr.quantile.type === ci) {
-  //         if (!prev.has(timezeroStr)) {
-  //           prev.set(timezeroStr, { line: [], area: new Map() })
-  //         }
-
-  //         if (!prev.get(timezeroStr)!.area.has(curr.target.end_date.toISOString())) {
-  //           prev.get(timezeroStr)!.area.set(curr.target.end_date.toISOString(), [{ xAxis: undefined, yAxis: undefined }, { xAxis: undefined, yAxis: undefined }]);
-  //         }
-
-  //         const mapEntry = prev.get(timezeroStr)!.area.get(curr.target.end_date.toISOString())!;
-  //         if (curr.quantile.point === QuantilePointType.Lower) {
-  //           mapEntry[0].xAxis = addDays(curr.target.end_date, -3);
-  //           mapEntry[0].yAxis = curr.value;
-  //         } else if (curr.quantile.point === QuantilePointType.Upper) {
-  //           mapEntry[1].xAxis = addDays(curr.target.end_date, 3);
-  //           mapEntry[1].yAxis = curr.value;
-  //         }
-  //       }
-  //       return prev;
-  //     }, new Map<string, { line: any[], area: Map<string, [any, any]> }>());
-
-  //     const result = _.flatMap([...seriesData.values()], (x, i) => {
-  //       const id = `${this.getDataFilterId()}-${modelData.model}-${i}`
-  //       return [{
-  //         type: 'line',
-  //         name: modelData.model,
-  //         id: id,
-  //         data: x.line.map(l => {
-  //           const area = x.area.get(l.value[0].toISOString());
-  //           return { value: [l.value[0], l.value[1], area?.map(a => a.yAxis) || undefined] };
-  //         }),
-  //         color: modelData.color,
-  //         emphasis: {
-  //           // focus: 'series',
-  //           // blurScope: 'global'
-  //         },
-  //         symbolSize: 6
-  //       },
-  //       {
-  //         type: 'line',
-  //         name: modelData.model,
-  //         id: `${id}-ci`,
-  //         data: _.flatMap([...x.area.values()], ([d0, d1]) => [{ value: [d0.xAxis, d0.yAxis] }, { value: [d1.xAxis, d1.yAxis] }]),
-  //         silent: true,
-  //         symbol: 'none',
-  //         color: modelData.color,
-  //         // emphasis: {
-  //         //   focus: 'self'
-  //         // },
-  //         itemStyle: {
-  //           opacity: 0
-  //         },
-  //         lineStyle: {
-  //           opacity: 0
-  //         },
-  //         markArea: {
-  //           itemStyle: {
-  //             color: modelData.color,
-  //             opacity: 0.4
-  //           },
-  //           data: [...x.area.values()]
-  //         },
-  //       }]
-  //     });
-
-  //     console.log("series", result);
-  //     return result;
-  //   });
-  // }
 
   private createForecastHorizonTooltipFormatter(): any {
     return (params: any | Array<any>) => {
-      // console.log(params);
+      console.log("TT for", params);
       const paramsArray = Array.isArray(params) ? params : [params];
       if (paramsArray.every(x => x.seriesId.endsWith('-ci'))) return '';
 
@@ -440,7 +324,7 @@ export class ForecastChartComponent implements OnInit, OnChanges {
 
             let line = `${curr.marker}&nbsp;${curr.seriesName}:&nbsp;${NumberHelper.formatInt(value)}`;
             if (ci) {
-              line += `&nbsp;(${NumberHelper.formatInt(ci[0])}&nbsp;-&nbsp;${NumberHelper.formatInt(ci[1])})`
+              line += `&nbsp;(${NumberHelper.formatInt(ci[0].yAxis)}&nbsp;-&nbsp;${NumberHelper.formatInt(ci[1].yAxis)})`
             }
             prev.fc_lines.push({ line, value });
 
@@ -455,7 +339,9 @@ export class ForecastChartComponent implements OnInit, OnChanges {
         lines.push(content.truthLine);
       }
 
-      return lines.concat(_.orderBy(content.fc_lines, 'value', 'desc').map(x => x.line)).join('<br/>');
+      const result = lines.concat(_.orderBy(content.fc_lines, 'value', 'desc').map(x => x.line)).join('<br/>');
+      console.log("TT RESULT:", result);
+      return result;
     }
   }
 
@@ -558,7 +444,6 @@ export class ForecastChartComponent implements OnInit, OnChanges {
           areaStyle: { color: modelData.color, opacity: 0.4 },
           data: seriesData.upper
         }
-
         return [line, lower, upper];
       });
       forecastSeries.forEach(x => result.push(x));
