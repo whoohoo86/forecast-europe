@@ -2,18 +2,13 @@ import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
 import { HttpClientModule } from '@angular/common/http';
 
-import { MdePopoverModule } from '@material-extended/mde';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { LocationMapComponent } from './components/location-map/location-map.component';
 import { LeafletModule } from '@asymmetrik/ngx-leaflet';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { NgxEchartsModule } from 'ngx-echarts';
-import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
-import { SettingsSelectionComponent } from './components/settings-selection/settings-selection.component';
 import { FormsModule } from '@angular/forms';
-import { ForecastComponent } from './pages/forecast/forecast.component';
-import { ForecastChartWithLegendComponent } from './components/forecast-chart-with-legend/forecast-chart-with-legend.component';
 import { ForecastChartComponent } from './components/forecast-chart/forecast-chart.component';
 import { LeafletExtentionDirective } from './directives/leaflet-extention.directive';
 import { EchartsZrClickDirective } from './directives/echarts-zr-click.directive';
@@ -23,7 +18,6 @@ import { ForecastDataSerivce } from './services/forecast-data.service';
 import { ForecastCsvDataService } from './services/forecast-csv-data.service';
 import { ForecastJsonDataService } from './services/forecast-json-data.service';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { ScaffoldComponent } from './scaffold/scaffold.component';
 import { LayoutModule } from '@angular/cdk/layout';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatButtonModule } from '@angular/material/button';
@@ -42,29 +36,23 @@ import { PortalModule } from '@angular/cdk/portal';
 import { MatSortModule } from '@angular/material/sort';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatExpansionModule } from '@angular/material/expansion';
-import { ForecastSettingComponent } from './components/forecast-setting/forecast-setting.component';
 import { LegendComponent } from './components/legend/legend.component';
 import { DateToPrevSaturdayPipe } from './pipes/date-to-prev-saturday.pipe';
 import { CdkScrollableExtDirective } from './directives/cdk-scrollable-ext.directive';
 import { TargetLabelPipe } from './pipes/target-label.pipe';
 import { ForecastLayoutComponent } from './components/forecast-layout/forecast-layout.component';
 import { ForecastLayoutItemComponent } from './components/forecast-layout-item/forecast-layout-item.component';
-import { ForecastRebuildComponent } from './pages/forecast-rebuild/forecast-rebuild.component';
+import { ForecastRebuildComponent } from './pages/forecast/forecast.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     LocationMapComponent,
-    SettingsSelectionComponent,
-    ForecastComponent,
-    ForecastChartWithLegendComponent,
     ForecastChartComponent,
     LeafletExtentionDirective,
     EchartsZrClickDirective,
     HoverClassDirective,
     LoadingSpinnerComponent,
-    ScaffoldComponent,
-    ForecastSettingComponent,
     LegendComponent,
     DateToPrevSaturdayPipe,
     CdkScrollableExtDirective,
@@ -81,7 +69,6 @@ import { ForecastRebuildComponent } from './pages/forecast-rebuild/forecast-rebu
     LeafletModule,
     FontAwesomeModule,
     PortalModule,
-    NgbModule,
     NgxEchartsModule.forRoot({
       /**
        * This will import all modules from echarts.
@@ -107,8 +94,7 @@ import { ForecastRebuildComponent } from './pages/forecast-rebuild/forecast-rebu
     MatExpansionModule,
     MatTableModule,
     MatSortModule,
-    MatCheckboxModule,
-    MdePopoverModule
+    MatCheckboxModule
   ],
   providers: [
     // { provide: ForecastDataSerivce, useClass: ForecastCsvDataService },

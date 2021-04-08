@@ -97,7 +97,7 @@
       </div>
     </div>
 
-    <div class="main-content" [class.small-width]="isSmallWidth$ | async">
+    <div class="main-content" [class.quick-access-open]="!startSideNavOpened">
       <div class="header-container">
         <ng-template [cdkPortalOutlet]="headerPortal$ | async"></ng-template>
         <button mat-icon-button *ngIf="isSmallWidth$ | async" class="display-setting-toggle" (click)="isSmallDisplaySettingsOpened = !isSmallDisplaySettingsOpened"><mat-icon>settings</mat-icon></button>

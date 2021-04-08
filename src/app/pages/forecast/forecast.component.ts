@@ -1,34 +1,27 @@
-import { AfterViewInit, Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
-import { BehaviorSubject, combineLatest, Observable, Subscription } from 'rxjs';
-import { debounceTime, delay, first, map, shareReplay, startWith, take, tap } from 'rxjs/operators';
-import { ChartDataView, ForecastByDateDisplayMode, ForecastByHorizonDisplayMode, ForecastData, ForecastDataFilter, ForecastDisplayMode, ForecastDisplaySettings, ForecastModelData, QuantileType } from 'src/app/models/forecast-data';
-import { ForecastTarget } from 'src/app/models/forecast-target';
-import { LocationLookupService } from 'src/app/services/location-lookup.service';
-import * as _ from 'lodash-es';
-import { TruthDataService } from 'src/app/services/truth-data.service';
-import { TruthData } from 'src/app/models/truth-data';
+import { CdkScrollable } from '@angular/cdk/scrolling';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { differenceInDays, isEqual } from 'date-fns';
-import { ForecastDataSerivce } from 'src/app/services/forecast-data.service';
-import { LocationLookup, LocationLookupItem } from 'src/app/models/location-lookup';
-import { DefaultSettingsService } from 'src/app/services/default-settings.service';
-import { CdkScrollable } from '@angular/cdk/overlay';
+import * as _ from 'lodash-es';
+import { BehaviorSubject, Observable, combineLatest } from 'rxjs';
+import { shareReplay, debounceTime, map } from 'rxjs/operators';
 import { ColorPicker } from 'src/app/models/color-picker';
+import { ForecastDisplaySettings, ForecastDataFilter, ChartDataView, ForecastModelData, QuantileType, ForecastByHorizonDisplayMode, ForecastByDateDisplayMode, ForecastDisplayMode } from 'src/app/models/forecast-data';
+import { ForecastTarget } from 'src/app/models/forecast-target';
+import { LocationLookupItem } from 'src/app/models/location-lookup';
 import { TargetLabelPipe } from 'src/app/pipes/target-label.pipe';
-import { BreakpointObserver } from '@angular/cdk/layout';
+import { DefaultSettingsService } from 'src/app/services/default-settings.service';
+import { ForecastDataSerivce } from 'src/app/services/forecast-data.service';
+import { LocationLookupService } from 'src/app/services/location-lookup.service';
+import { TruthDataService } from 'src/app/services/truth-data.service';
 
 @Component({
   selector: 'app-forecast',
   templateUrl: './forecast.component.html',
   styleUrls: ['./forecast.component.scss']
 })
-export class ForecastComponent implements OnInit, OnDestroy, AfterViewInit {
+export class ForecastRebuildComponent implements OnInit {
   ForecastTargetEnum = ForecastTarget;
   QuantileTypeEnum = QuantileType;
-  startSideNavOpened = true;
-  prevStartSideNavOpened: boolean = true;
-  endSideNavOpened = true;
-  isDisplaySettingOpened = true;
-  prevIsDisplaySettingOpened: boolean = true;
 
   private targetLabelPipe = new TargetLabelPipe();
   private userVisibleModels$ = new BehaviorSubject<string[] | undefined>(undefined);
@@ -45,34 +38,7 @@ export class ForecastComponent implements OnInit, OnDestroy, AfterViewInit {
   mapLegendHeader$: Observable<string>;
   colorPicker = new ColorPicker();
 
-  isDesktopWidth$: Observable<boolean>;
-  isDisplaySettingHeight$: Observable<boolean>;
-
-  displaySettingCloseSubscription: Subscription;
-  startSideNavCloseSubscription: Subscription;
-
-  constructor(private forecastService: ForecastDataSerivce, public locationService: LocationLookupService, private truthDataService: TruthDataService, private defaultSettingService: DefaultSettingsService, private breakpointObserver: BreakpointObserver) {
-    this.isDesktopWidth$ = this.breakpointObserver.observe('(min-width: 1400px)').pipe(map(x => x.matches)).pipe(shareReplay(1));
-    this.startSideNavCloseSubscription = this.isDesktopWidth$.subscribe(isDesktopWidth => {
-      if (!isDesktopWidth) {
-        this.prevStartSideNavOpened = this.startSideNavOpened;
-        this.startSideNavOpened = false;
-      }
-      else {
-        this.startSideNavOpened = this.prevStartSideNavOpened;
-      }
-    });
-
-    this.isDisplaySettingHeight$ = this.breakpointObserver.observe('(min-height: 700px)').pipe(map(x => x.matches)).pipe(shareReplay(1));
-    this.displaySettingCloseSubscription = this.isDisplaySettingHeight$.subscribe(isHeighEnoughForDisplaySettings => {
-      if (!isHeighEnoughForDisplaySettings) {
-        this.prevIsDisplaySettingOpened = this.isDisplaySettingOpened;
-        this.isDisplaySettingOpened = false;
-      } else {
-        this.isDisplaySettingOpened = this.prevIsDisplaySettingOpened;
-      }
-    });
-
+  constructor(private forecastService: ForecastDataSerivce, public locationService: LocationLookupService, private truthDataService: TruthDataService, private defaultSettingService: DefaultSettingsService) {
     this.ensembleModelNames$ = this.defaultSettingService.ensembleModelNames$;
 
     this.dataFilter = new ForecastDataFilter(this.locationService);
@@ -157,16 +123,7 @@ export class ForecastComponent implements OnInit, OnDestroy, AfterViewInit {
       }));
   }
 
-  closeStartSideNav() {
-    this.startSideNavOpened = false;
-  }
-
-  openStartSideNav() {
-    this.startSideNavOpened = true;
-  }
-
-  changeVisibleModels(models: string[]) {
-    this.userVisibleModels$.next(models);
+  ngOnInit(): void {
   }
 
   changeTarget(target: ForecastTarget) {
@@ -175,17 +132,6 @@ export class ForecastComponent implements OnInit, OnDestroy, AfterViewInit {
 
   changeLocation(location: LocationLookupItem | undefined) {
     this.dataFilter.changeLocation(location);
-  }
-
-  changeForecastDate(date: Date, dates: Date[], currentDisplayMode: ForecastDisplayMode) {
-    if (currentDisplayMode && currentDisplayMode.$type === 'ForecastByDateDisplayMode' && dates) {
-      const closestDate = _.minBy(dates, x => Math.abs(differenceInDays(x, date)));
-      if (closestDate && Math.abs(differenceInDays(closestDate, date)) <= 7) {
-        const newMode = { ...currentDisplayMode, forecastDate: closestDate };
-        this.displaySettings.changeDateDisplayMode(newMode);
-        // this.displaySettings.changeDisplayMode(newMode);
-      }
-    }
   }
 
   compareDates(l: Date, r: Date) {
@@ -209,20 +155,12 @@ export class ForecastComponent implements OnInit, OnDestroy, AfterViewInit {
     this.displaySettings.changeDateDisplayMode({ ...currentDisplayMode, weeksShown: update });
   }
 
-  // changeVisbileModels(visibleModels: string[]) {
-  //   this.userVisibleModels$.next(visibleModels);
-  // }
-
   canExecPrev(currentDisplaMode: ForecastDisplayMode, availableDates: Date[]) {
     return currentDisplaMode.$type === 'ForecastByDateDisplayMode' && this.getAvailableDateByDir('prev', currentDisplaMode, availableDates) !== undefined;
   }
 
   canExecNext(currentDisplaMode: ForecastDisplayMode, availableDates: Date[]) {
     return currentDisplaMode.$type === 'ForecastByDateDisplayMode' && this.getAvailableDateByDir('next', currentDisplaMode, availableDates) !== undefined;
-  }
-
-  forceResize() {
-    window.dispatchEvent(new Event('resize'));
   }
 
   private getAvailableDateByDir(dir: 'prev' | 'next', currentDisplaMode: ForecastDisplayMode, availableDates: Date[]): Date | undefined {
@@ -247,19 +185,27 @@ export class ForecastComponent implements OnInit, OnDestroy, AfterViewInit {
     }
   }
 
+  changeForecastDate(date: Date, dates: Date[], currentDisplayMode: ForecastDisplayMode) {
+    if (currentDisplayMode && currentDisplayMode.$type === 'ForecastByDateDisplayMode' && dates) {
+      const closestDate = _.minBy(dates, x => Math.abs(differenceInDays(x, date)));
+      if (closestDate && Math.abs(differenceInDays(closestDate, date)) <= 7) {
+        const newMode = { ...currentDisplayMode, forecastDate: closestDate };
+        this.displaySettings.changeDateDisplayMode(newMode);
+      }
+    }
+  }
+
+  changeVisibleModels(visibleModels: string[]) {
+    this.userVisibleModels$.next(visibleModels);
+  }
 
   @ViewChild(CdkScrollable) scroller?: CdkScrollable;
-
-  canScrollDown: boolean = true;
-  canScrollUp: boolean = false;
 
   scrollDown() {
     if (this.scroller) {
       const currentTop = this.scroller.measureScrollOffset('top');
       const newTop = currentTop + 42;
       this.scroller.scrollTo({ behavior: 'smooth', top: newTop });
-      this.canScrollDown = true;
-      this.canScrollUp = newTop > 0;
     }
   }
 
@@ -268,35 +214,6 @@ export class ForecastComponent implements OnInit, OnDestroy, AfterViewInit {
       const currentTop = this.scroller.measureScrollOffset('top');
       const newTop = currentTop - 42;
       this.scroller.scrollTo({ behavior: 'smooth', top: newTop });
-      this.canScrollUp = newTop > 0;
-      this.canScrollDown = true;
     }
   }
-
-  noop() { }
-
-  // logScroll(event: any) {
-  //   console.log("SCROLL", event);
-  // }
-
-  log(event: any, text?: string) {
-    if (text) {
-      console.log(text, event);
-    } else {
-      console.log(event);
-    }
-  }
-
-  ngOnInit(): void {
-  }
-
-  ngOnDestroy(): void {
-    this.startSideNavCloseSubscription.unsubscribe();
-    this.displaySettingCloseSubscription.unsubscribe();
-  }
-
-  ngAfterViewInit(): void {
-  }
-
-
 }
