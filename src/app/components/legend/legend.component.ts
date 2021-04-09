@@ -32,6 +32,8 @@ export class LegendComponent implements OnInit, OnChanges {
   @ViewChild('tooltip') tooltipPortalContent!: TemplateRef<unknown>;
   @ViewChild(MatSort) sort!: MatSort;
 
+  updateTooltipDebounce: _.DebouncedFunc<() => void>;
+
   constructor(private elementRef: ElementRef, private viewContainerRef: ViewContainerRef, private overlay: Overlay, private overlayPositionBuilder: OverlayPositionBuilder, private metadataService: MetadataService) {
     this.dataSource = new MatTableDataSource();
 
@@ -45,6 +47,8 @@ export class LegendComponent implements OnInit, OnChanges {
 
       return (<any>row)[colName];
     }
+
+    this.updateTooltipDebounce = _.debounce(() => this.updateTooltip(), 1500);
   }
 
   ngAfterViewInit() {
@@ -105,10 +109,14 @@ export class LegendComponent implements OnInit, OnChanges {
         ]);
       this.overlayRef.updatePositionStrategy(positionStrategy);
 
-      if (!this.overlayRef.hasAttached()) {
-        const tooltipPortal = new TemplatePortal(this.tooltipPortalContent, this.viewContainerRef);
-        this.overlayRef.attach(tooltipPortal);
-      }
+      this.updateTooltipDebounce();
+    }
+  }
+
+  private updateTooltip() {
+    if (this.overlayRef && !this.overlayRef.hasAttached()) {
+      const tooltipPortal = new TemplatePortal(this.tooltipPortalContent, this.viewContainerRef);
+      this.overlayRef.attach(tooltipPortal);
     }
   }
 
@@ -118,7 +126,7 @@ export class LegendComponent implements OnInit, OnChanges {
       if (!closed) {
         this.hideTooltip();
       }
-    }, 500);
+    }, 750);
   }
 
   canCloseTooltip = true;
