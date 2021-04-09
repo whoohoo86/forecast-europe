@@ -48,7 +48,7 @@ export class ForecastChartComponent implements OnInit, OnChanges {
       trigger: 'axis' as 'axis',
       axisPointer: { show: true },
       formatter: undefined as any,
-      position: [10, 10]
+      position: [70, 25]
     },
     dataZoom: [
       { type: 'inside', start: 80, end: 100, filterMode: 'weakFilter' as 'weakFilter' },
@@ -94,14 +94,6 @@ export class ForecastChartComponent implements OnInit, OnChanges {
 
   onAxisPointerClick(event: [Date, any]) {
     this.onForecastDateChanged.emit(event[0]);
-  }
-
-  onChartMouseOver(event: any) {
-    console.log("MOUSE OVER", event);
-  }
-
-  onChartMouseOut(event: any) {
-    console.log("MOUSE OUT", event);
   }
 
   private highlightedModel?: string;
@@ -301,7 +293,6 @@ export class ForecastChartComponent implements OnInit, OnChanges {
       return result;
     });
   }
-
 
   private createForecastHorizonTooltipFormatter(): any {
     return (params: any | Array<any>) => {
